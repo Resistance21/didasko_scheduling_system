@@ -3,15 +3,20 @@ import './App.css';
 
 import { auth, createUserProfileDocument } from './firebase/firebase.utils';
 
+import {Route, Switch, Redirect} from 'react-router-dom';
+
 import Signin from './components/sign-in/sign-in.component';
 import Signup from './components/sign-up/sign-up.component';
+import AdminPage from './Pages/admin-page/admin-page';
+import SignIn from './components/sign-in/sign-in.component';
 
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      currentUser: null
+      currentUser: null,
+      accountType: "admin"
     };
   }
 
@@ -26,25 +31,46 @@ class App extends Component {
           this.setState({
             currentUser: {
               id: snapShot.id,
+              accountType: snapShot.accountType,
               ...snapShot.data()
             }
           });
 
-          console.log(this.state);
+          console.log("FIRST STATE " + this.state);
+          //this.setState({ accountType: (this.currentUser.accountType) })
+          console.log(this.state.currentUser.accountType);
         });
       }
 
       this.setState({ currentUser: userAuth });
+
     });
   }
+
     
     
 
   render() {
     return (
-      <div>
-        <Signin />
-        <Signup />
+      <div className="app-div">
+          <Signin className="inner" />
+        <Signup className="inner" />
+        {this.accountType === "admin" ? <AdminPage/> : null}
+        <Switch>
+          {this.accountType === "admin" ? <AdminPage/> : null}
+          {this.accountType === "manager" ? <Route component={SignIn} /> : null}
+          {this.accountType === "lecturer" ? <Route component={SignIn} /> : null}
+
+          <Route render={() =>
+            this.accountType === "admin" ? (
+              <Redirect to='/' />
+            ) : (
+                <AdminPage />
+              )}
+          />
+          
+        </Switch>
+        <AdminPage></AdminPage>
 
       </div>
     );

@@ -16,7 +16,7 @@ import 'firebase/auth';
     measurementId: "G-7Z3Q2WKRPW"
 };
   
-export const createUserProfileDocument = async (userAuth, displayName, email, AccountType, Subjects) => {
+export const createUserProfileDocument = async (userAuth, displayName, email, accountType, subjects) => {
     if (!userAuth) {
         return
     }
@@ -30,14 +30,33 @@ export const createUserProfileDocument = async (userAuth, displayName, email, Ac
         console.log("DISPLAYNAME: " + displayName)
         console.log("EMAIL: " + email)
         const createdAt = new Date();
+        const schedules = [];
+        let currentYear = createdAt.getFullYear();
+        const firstSchedule = {
+            [currentYear]: {
+                subject1: {
+
+                },
+                subject2: {
+
+                },
+                subject3: {
+
+                },
+
+            }
+        }
+
+        schedules.push(firstSchedule);
 
         try {
             await userRef.set({
                 displayName,
                 email,
                 createdAt,
-                AccountType,
-                Subjects,
+                accountType,
+                subjects,
+                schedules
                     
                 }
             )

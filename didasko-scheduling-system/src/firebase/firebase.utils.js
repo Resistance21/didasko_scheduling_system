@@ -22,7 +22,7 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
     }
 
     const userRef = firestore.doc(`user/${userAuth.uid}`);
-
+    console.log("Inside crate profile")
     const snapShot = await userRef.get()
 
     if (!snapShot.exists) {

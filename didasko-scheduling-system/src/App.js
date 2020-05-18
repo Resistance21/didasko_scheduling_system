@@ -8,6 +8,8 @@ import {Route, Switch, Redirect} from 'react-router-dom';
 import Signin from './components/sign-in/sign-in.component';
 import Signup from './components/sign-up/sign-up.component';
 import AdminPage from './Pages/admin-page/admin-page';
+import ManagerPage from './Pages/manager-page/manager-page';
+import LecturerPage from './Pages/lecturer-page/lecturer-page';
 import SignIn from './components/sign-in/sign-in.component';
 
 class App extends Component {
@@ -16,7 +18,7 @@ class App extends Component {
 
     this.state = {
       currentUser: null,
-      accountType: "admin"
+      accountType: "lecturer"
     };
   }
 
@@ -36,42 +38,41 @@ class App extends Component {
             }
           });
 
-          console.log("FIRST STATE " + this.state);
-          //this.setState({ accountType: (this.currentUser.accountType) })
+          console.log(this.state.currentUser);
           console.log(this.state.currentUser.accountType);
+          this.setState({ accountType: this.state.currentUser.accountType });
+          console.log(this.state.accountType);
+          //this.setState({ currentUser: null });
         });
       }
 
       this.setState({ currentUser: userAuth });
+      this.setState({ accountType: "manager" });
+      console.log(this.state.accountType);
 
     });
   }
 
     
-    
 
   render() {
     return (
       <div className="app-div">
-          <Signin className="inner" />
+        <Signin className="inner" />
         <Signup className="inner" />
-        {this.accountType === "admin" ? <AdminPage/> : null}
+        {this.state.accountType === "admin" ? <ManagerPage/> : null}
         <Switch>
-          {this.accountType === "admin" ? <AdminPage/> : null}
-          {this.accountType === "manager" ? <Route component={SignIn} /> : null}
-          {this.accountType === "lecturer" ? <Route component={SignIn} /> : null}
-
-          <Route render={() =>
-            this.accountType === "admin" ? (
-              <Redirect to='/' />
-            ) : (
-                <AdminPage />
-              )}
-          />
-          
+          {this.state.accountType === "admin" ? <AdminPage/> : null}
+          {this.state.accountType === "manager" ? <ManagerPage/> : null}
+          {this.state.accountType === "lecturer" ? <LecturerPage /> : null} 
+          {console.log("STATE user: " + this.state.currentUser)}
         </Switch>
-        <AdminPage></AdminPage>
-
+        {this.state.currentUser === null ?
+            <div className="app-div">
+              <SignIn className="inner" />
+              <Signup className="inner" />
+              {console.log("inside sing in")}
+            </div> :null} 
       </div>
     );
   }

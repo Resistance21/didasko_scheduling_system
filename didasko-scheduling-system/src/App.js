@@ -11,6 +11,7 @@ import AdminPage from './Pages/admin-page/admin-page';
 import ManagerPage from './Pages/manager-page/manager-page';
 import LecturerPage from './Pages/lecturer-page/lecturer-page';
 import SignIn from './components/sign-in/sign-in.component';
+import Schedule from './components/schedule/schedule-component';
 
 class App extends Component {
   constructor() {
@@ -42,7 +43,8 @@ class App extends Component {
           console.log(this.state.currentUser.accountType);
           this.setState({ accountType: this.state.currentUser.accountType });
           console.log(this.state.accountType);
-          //this.setState({ currentUser: null });
+/*           this.setState({ currentUser: null });
+          this.setState({accountType: ""}) */
         });
       }
 
@@ -61,11 +63,11 @@ class App extends Component {
         <Signin className="inner" />
         <Signup className="inner" />
         {this.state.accountType === "admin" ? <ManagerPage/> : null}
+        {this.state.accountType === "admin" ? <AdminPage/> : null}
+        {this.state.accountType === "manager" ? <ManagerPage/> : null}
+        {this.state.accountType === "lecturer" ? <LecturerPage /> : null} 
         <Switch>
-          {this.state.accountType === "admin" ? <AdminPage/> : null}
-          {this.state.accountType === "manager" ? <ManagerPage/> : null}
-          {this.state.accountType === "lecturer" ? <LecturerPage /> : null} 
-          {console.log("STATE user: " + this.state.currentUser)}
+          <Route exact path="/schedule" component={Schedule} />
         </Switch>
         {this.state.currentUser === null ?
             <div className="app-div">

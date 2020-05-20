@@ -1,0 +1,22 @@
+.grid-holder{
+    display: grid;
+    grid-template-columns: [first]1fr [second]1fr repeat(12, 1fr);
+    width: 100%;
+    //grid-column-gap: 2px;
+    //grid-row-gap: 10px;
+    background-color: #ff000005;
+    margin-top: 5px;
+
+    .grid-row{
+        text-align: center;
+        font-size: 18px;;
+        background-color: #3ebd83;
+        border: solid;
+        border-right: none;
+    }
+
+    .color{
+        background-color: #2e08d4; 
+    }
+}
+

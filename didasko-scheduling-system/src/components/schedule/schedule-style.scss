@@ -1,0 +1,13 @@
+.schedule-header{
+    display: grid;
+    grid-template-columns: [first]1fr [second]1fr repeat(12, 1fr);
+    width: 100%;
+    grid-column-gap: 2px;
+    grid-row-gap: 2px;
+    background-color: #ff000005;
+
+    .schedule-header-item{
+        text-align: center;
+        
+    }
+}

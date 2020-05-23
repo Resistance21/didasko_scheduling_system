@@ -25,27 +25,28 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
     console.log("Inside crate profile")
     const snapShot = await userRef.get()
 
-    if (!snapShot.exists) {
+/*     if (!snapShot.exists) {
         //const { email } = userAuth;
         console.log("DISPLAYNAME: " + displayName)
         console.log("EMAIL: " + email)
+        let subject1 = {}
+        let subject2 = {}      
+        let subject3 = {}
         const createdAt = new Date();
-        const schedules = [];
+        let schedules = [];
         let currentYear = createdAt.getFullYear();
-        const firstSchedule = {
-            [currentYear]: {
-                subject1: {
-
+        let firstSchedule = [
+            [currentYear] = [
+                subject1 = {
+                    name: "MATH"
+                }, subject2 = {
+                    name: "ENGLISH"
                 },
-                subject2: {
-
+                subject3 = {
+                    name: "SCIENCE"
                 },
-                subject3: {
-
-                },
-
-            }
-        }
+            ]
+        ]
 
         schedules.push(firstSchedule);
 
@@ -58,16 +59,22 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
                 subjects,
                 schedules
                     
-                }
+            }
             )
         }
         catch (err) {
             console.log("error making user: " + err);
         }
-    }
-    return userRef;
-    //console.log(snapShot)
+    
+        return userRef;
+        //console.log(snapShot)
+    
+    } */
 }
+
+  
+
+
 
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);

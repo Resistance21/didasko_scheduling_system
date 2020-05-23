@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 
-import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument, firestore } from './firebase/firebase.utils';
 
 import {Route, Switch, Redirect} from 'react-router-dom';
 
@@ -19,14 +19,50 @@ class App extends Component {
 
     this.state = {
       currentUser: null,
-      accountType: "lecturer"
+      email: '',
+      displayName: '',
+      accountType: "lecturer",
+      fetching: true
+
     };
   }
 
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+    console.log(this.state.fetching)
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        firestore.collection('user').doc(user.uid).get().then((doc) => {
+          this.setState({
+            fetching: false,
+            email: user.email,
+            displayName: doc.data().displayName,
+            accountType: doc.data().accountType,
+            currentUser: {
+              email: user.email,
+              displayName: doc.data().displayName,
+              accountType: doc.data().accountType,
+              schedules: doc.data().schedules,
+              subjects: doc.data().subjects
+            },
+          })
+          console.log(this.state);
+          console.log("FALSE LOADING1:" + this.state.fetching)
+          console.log(this.state.currentUser.displayName)
+          console.log(this.state.currentUser.email)
+          console.log(this.state.currentUser.accountType)
+          console.log(this.state.currentUser.schedules)
+          console.log(this.state.currentUser.subjects)
+          console.log("FALSE LOADING2:" + this.state.fetching)
+        })
+        // User is signed in.
+      } else {
+        // No user is signed in.
+      }
+    console.log("FALSE LOADING2:" + this.state.fetching)
+    });
+/*     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth);
 
@@ -43,8 +79,6 @@ class App extends Component {
           console.log(this.state.currentUser.accountType);
           this.setState({ accountType: this.state.currentUser.accountType });
           console.log(this.state.accountType);
-/*           this.setState({ currentUser: null });
-          this.setState({accountType: ""}) */
         });
       }
 
@@ -52,12 +86,13 @@ class App extends Component {
       this.setState({ accountType: "manager" });
       console.log(this.state.accountType);
 
-    });
+    }); */
   }
 
     
 
   render() {
+
     return (
       <div className="app-div">
         <Signin className="inner" />
@@ -67,7 +102,10 @@ class App extends Component {
         {this.state.accountType === "manager" ? <ManagerPage/> : null}
         {this.state.accountType === "lecturer" ? <LecturerPage /> : null} 
         <Switch>
-          <Route exact path="/schedule" component={Schedule} />
+        {console.log(this.state.currentUser)}
+          {this.state.fetching ? <div> L O A D I N G </div> :
+            <Route exact path="/schedule"  component={Schedule} />
+          }
         </Switch>
         {this.state.currentUser === null ?
             <div className="app-div">

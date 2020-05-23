@@ -12,6 +12,7 @@ import ManagerPage from './Pages/manager-page/manager-page';
 import LecturerPage from './Pages/lecturer-page/lecturer-page';
 import SignIn from './components/sign-in/sign-in.component';
 import Schedule from './components/schedule/schedule-component';
+import CSVUpload from './components/csv-uploader/csv-uploader-component'
 
 class App extends Component {
   constructor() {
@@ -96,17 +97,18 @@ class App extends Component {
     return (
       <div className="app-div">
         <Signin className="inner" />
-        <Signup className="inner" />
+        {/* <Signup className="inner" />
         {this.state.accountType === "admin" ? <ManagerPage/> : null}
         {this.state.accountType === "admin" ? <AdminPage/> : null}
         {this.state.accountType === "manager" ? <ManagerPage/> : null}
-        {this.state.accountType === "lecturer" ? <LecturerPage /> : null} 
+        {this.state.accountType === "lecturer" ? <LecturerPage /> : null}  */}
         <Switch>
         {console.log(this.state.currentUser)}
           {this.state.fetching ? <div> L O A D I N G </div> :
             <Route exact path="/schedule"  component={Schedule} />
           }
         </Switch>
+          <CSVUpload />
         {this.state.currentUser === null ?
             <div className="app-div">
               <SignIn className="inner" />

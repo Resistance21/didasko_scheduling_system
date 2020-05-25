@@ -1,17 +1,36 @@
-.schedule-header{
-    display: grid;
-    grid-template-columns: [first]1fr [second]1fr repeat(12, 1fr);
-    width: 100%;
-    grid-column-gap: 2px;
-    grid-row-gap: 2px;
-    background-color: #ff000005;
+.schedule-container{
+    
+    .schedule-header{
+        display: grid;
+        grid-template-columns: [first]5fr [second]1fr repeat(12, 1fr);
+        width: 100%;
+        grid-column-gap: 2px;
+        grid-row-gap: 2px;
+        background-color: #ff000005;
 
-    .schedule-header-item{
-        text-align: center;
+    
+        .schedule-header-item{
+            text-align: center;
+            
+        }
         
     }
+    .grid-holder{
+        display: grid;
+        grid-template-columns: [first]5fr [second]1fr repeat(12, 1fr);
+        width: 100%;
+        //grid-column-gap: 2px;
+        //grid-row-gap: 10px;
+        background-color: #ff000005;
+        margin-top: 5px;
+    }
+
 }
 
 .new-class{
     margin-top: 20px;
+}
+
+.grid-row{
+    height: 20px;
 }

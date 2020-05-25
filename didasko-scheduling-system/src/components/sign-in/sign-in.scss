@@ -1,7 +1,9 @@
 .sign-in{
-    width: 380px;
+    width: 1000px;
     display: flex;
+    padding: 30px;
     flex-direction: column;
+    background-color: white;
 
     .title{
         margin: 10px 0;
@@ -9,6 +11,11 @@
 
     .buttons{
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
+    }
+
+    .login-text{
+        align-self: center;
+        font-size: 2em;
     }
 }

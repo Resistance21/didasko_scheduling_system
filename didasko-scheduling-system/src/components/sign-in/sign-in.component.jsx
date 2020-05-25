@@ -20,6 +20,7 @@ class SignIn extends Component {
     handleSubmit = async (event) => {
         event.preventDefault();
         const { email, password } = this.state;
+        console.log(email, password)
         
         try {
             await auth.signInWithEmailAndPassword(email, password); 
@@ -39,14 +40,12 @@ class SignIn extends Component {
     render() {
         return (
             <div className='sign-in'>
-                <h2>I already have an account</h2>
-                <span>Sign in with your email and password</span>
+                <span className='login-text'>Sign in with your email and password</span>
                 <form onSubmit={this.handleSubmit}>
                     <FormInput name='email' type='email' value={this.state.email} handleChange={this.handleChange} label='email' required />
                     <FormInput name='password' value={this.state.password} type='password' handleChange={this.handleChange} label='password' required />
                     <div className='buttons'>
                         <CustomButton type='submit'> SIGN IN</CustomButton>
-                        <CustomButton onClick={signInWithGoogle} isGoogleSignIn > SIGN IN WITH GOOGLE</CustomButton>
                     </div>
                 </form>
 

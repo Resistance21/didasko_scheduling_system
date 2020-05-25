@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import './schedule-style.scss';
-import { auth, createUserProfileDocument, firestore } from '../../firebase/firebase.utils';
+import { auth, firestore, firestoreTwo } from '../../firebase/firebase.utils';
 import ScheduleRow from '../schedule-row/schedule-row-component';
 import CustomButton from '../custom-button/custom-button.component'
 import ScheduleRowPicker from '../schedule-row-picker/schedule-row-picker-component';
@@ -22,6 +22,7 @@ class schedule extends Component {
                 schedules: {},
                 subjects: ''
             },
+            schedules: {},
             classAmount: 0,
             scheduleName: "",
             scheduleRowAmount: 0,
@@ -29,11 +30,12 @@ class schedule extends Component {
 
         }
         this.addNewClass = this.addNewClass.bind(this);
+        this.componentDidMount = this.componentDidMount.bind(this);
         
     }
 
     componentDidMount() {
-
+        console.log("COMPONENT MOUNT")
         const user = auth.currentUser;
         if (user) {
             firestore.collection('user').doc(user.uid).get().then((doc) => {
@@ -46,54 +48,57 @@ class schedule extends Component {
                         schedules: doc.data().schedules,
                         subjects: doc.data().subjects
                     },
-                    classAmount: Object.keys(doc.data().schedules.y2020).length
-                    //loading: false
+                    schedules: doc.data().schedules,
+                    classAmount: Object.keys(doc.data().schedules.y2020).length,
+                    loading: false,
+                    reUpdate: false
                 })
-                this.setState({loading: false})
             })
         }else {
         // No user is signed in.
         }
+
     }
 
     createRows() {
-        const { schedules } = this.state.currentUser;
-        let key = 0;
-        let subjectNum = 0;
-        let rows = [];
-        //rows = schedules.map(item => {
-            //let yearNum = 2020;
-        let subjectAmount = Object.keys(schedules.y2020).length;
-        //console.log("SubjectAmount " + subjectAmount)
-        //console.log("SCHEDULE ", schedules.y2020)
+        const { schedules } = this.state;
+        //const { uid } = this.state.currentUser;
+        //const classDropDown = document.querySelector('#subjects-class-picker-dropdown');
+        //const rows = await this.getCurrentSchedule();
+            let key = 0;
+            let subjectNum = 0;
+            //let rows = [];
+            let subjectAmount = Object.keys(schedules.y2020).length;
             let classRow = [];
-            for (let i = 0; i < subjectAmount; i++){
-                key += 1;
-                subjectNum += 1;
-                let subjectNumber = "subject" + subjectNum;
-                let subjectMonthsArray = schedules.y2020[subjectNumber].months.split(",");
-                //console.log("months String: ", schedules)
-                //console.log("months String: ", subjectNumber)
-                //console.log(Object.keys(schedules.y2020).length)
-                classRow.push(<ScheduleRow key={key} className="schedule-row" months={subjectMonthsArray} />)
-                //console.log(classRow)
-                //subjectNum += 1;
+            if (subjectAmount > 0) {           
+                for (let keyCheck in schedules.y2020) {
+                    if (schedules.y2020.hasOwnProperty(keyCheck)) {
+                        //console.log("SCHUDELE OBJ:", schedules.y2020[keyCheck])//.hasOwnProperty('months'));
+                        key += 1;
+                        subjectNum += 1;
+                        let subject = schedules.y2020[keyCheck].subject;
+                        let subjectMonthsArray = schedules.y2020[keyCheck].months.split(",");
+                        //console.log("months subject: ", keyCheck)
+                        //console.log("months months: ", schedules.y2020[keyCheck].months)
+                        classRow.push(<ScheduleRow key={key} classID={keyCheck} className="schedule-row" subject={subject} months={subjectMonthsArray} />)   
+                    }
+                }
             }
-            return classRow
-
-        //})
-        //return rows
+            this.child = classRow;
+            console.log('Schedule STATE', this.state.schedules)
+            console.log("CHILDREN", this.child)
+            return classRow  
     }
 
     addNewClass = (event) => {
-        const selectedMonths = document.querySelectorAll('.new-class-colour')
+        const selectedMonths = document.querySelectorAll('.new-class-colour');
+        const dropDown = document.querySelector('#subjects-picker-dropdown');
+        const dropDownClass = document.querySelector('#subjects-class-picker-dropdown');
         const { uid, schedules} = this.state.currentUser;
+        let { loading } = this.state.currentUser;
         let selectedMonthsString = '';
-        let subjectNum = this.state.classAmount + 1;
+        let classID = dropDownClass.value;
         const subjectString = "subject";
-        let subjectNumstring = subjectString + subjectNum;
-        //console.log("MONTHS", selectedMonths)
-        //console.log("UID:" + uid)
 
         for (let item of selectedMonths) {
             //console.log('ITEM', item)
@@ -102,69 +107,97 @@ class schedule extends Component {
 
         const userSchedule = firestore.collection('user').doc(uid)
 
-        const userScheduleMerge = userSchedule.set({
+        userSchedule.set({
             schedules: {
                 y2020: {
-                    [subjectNumstring]: {
-                        months: selectedMonthsString
+                    [classID]: {
+                        months: selectedMonthsString,
+                        subject: dropDown.value
                     }
                 
                 }
             }
         }, { merge: true })
             .then(() => {
-                console.log("New subject added");
-            const userSchedule = firestore.collection('user').doc(uid).get().then((doc) => {
+            firestore.collection('user').doc(uid).get().then((doc) => {
                 this.setState(prevState => ({
                     currentUser: {
                         ...prevState.currentUser,
                         schedules: doc.data().schedules,
                     },
-                    classAmount: subjectNum
+                    schedules: doc.data().schedules,
+                    subject: doc.data().subject
+                    //classAmount: subjectNum
                 }))
-            })
+                console.log("New subject added");
+                //console.log("STATE", this.state.schedules);
+                //this.forceUpdate();
+                loading = true;
+                //loading = false;
+            }
+            )
             }).catch(err => {
                 console.log(err.message)
             });
+    }
+    
+    deleteClass = () => {
+        const { uid } = this.state.currentUser;
+        console.log('UID', uid)
+        const dropDownClass = document.querySelector('#subjects-class-picker-dropdown');
+        const dropDownClassValue = dropDownClass.value
+        console.log("drop down value", dropDownClass.value)
+        /* firestore.collection('classes').doc(dropDownClass.value).delete().then(() => {
+            console.log('document deleted');
+        }).catch(err => {
+            console.log('there was an error', err)
+        }) */
+        const userRef = firestore.collection('user').doc(uid)
+
+        userRef.update({
+            [`schedules.y2020.${dropDownClassValue}`]: firestoreTwo.FieldValue.delete()
+        })
+
+        userRef.get().then(doc =>{
+            this.setState({ schedules: doc.data().schedules})
+        })
+        
+    }
+
+    foreRefresh = () => {
+        console.log("COMPONENT MOUNT")
+        const user = auth.currentUser;
+        if (user) {
+            firestore.collection('user').doc(user.uid).get().then((doc) => {
+                this.setState({
+                    currentUser: {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: doc.data().displayName,
+                        accountType: doc.data().accountType,
+                        schedules: doc.data().schedules,
+                        subjects: doc.data().subjects
+                    },
+                    schedules: doc.data().schedules,
+                    classAmount: Object.keys(doc.data().schedules.y2020).length,
+                    loading: false,
+                    reUpdate: false
+                })
+            })
+        }else {
+        // No user is signed in.
         }
+        
+    }
     
 
 
     render() {
         return (
             <div>
-                <div className="schedule-header">
-                    <div className="schedule-header-item"></div>
-                    <div className="schedule-header-item"><span>J</span> </div>
-                    <div className="schedule-header-item"><span>F</span> </div>
-                    <div className="schedule-header-item"><span>M</span> </div>
-                    <div className="schedule-header-item"><span>A</span> </div>
-                    <div className="schedule-header-item"><span>M</span> </div>
-                    <div className="schedule-header-item"><span>J</span> </div>
-                    <div className="schedule-header-item"><span>J</span> </div>
-                    <div className="schedule-header-item"><span>A</span> </div>
-                    <div className="schedule-header-item"><span>S</span> </div>
-                    <div className="schedule-header-item"><span>O</span> </div>
-                    <div className="schedule-header-item"><span>N</span> </div>
-                    <div className="schedule-header-item"><span>D</span> </div>
-                </div>
-                { this.state.loading && !(this.state.redraw) ? <div> L O A D I N G </div> : this.createRows() }
-                <div className="schedule-header">
-                    <div className="schedule-header-item"></div>
-                    <div className="schedule-header-item"><span>J</span> </div>
-                    <div className="schedule-header-item"><span>F</span> </div>
-                    <div className="schedule-header-item"><span>M</span> </div>
-                    <div className="schedule-header-item"><span>A</span> </div>
-                    <div className="schedule-header-item"><span>M</span> </div>
-                    <div className="schedule-header-item"><span>J</span> </div>
-                    <div className="schedule-header-item"><span>J</span> </div>
-                    <div className="schedule-header-item"><span>A</span> </div>
-                    <div className="schedule-header-item"><span>S</span> </div>
-                    <div className="schedule-header-item"><span>O</span> </div>
-                    <div className="schedule-header-item"><span>N</span> </div>
-                    <div className="schedule-header-item"><span>D</span> </div>
-                </div>
-                <div className="new-class">
+            
+                <label>{this.state.loading ?    `L O A D I N G`: `Lectuere ${this.state.currentUser.email} Schedule`}</label>
+                <div className="schedule-container">
                     <div className="schedule-header">
                         <div className="schedule-header-item"></div>
                         <div className="schedule-header-item"><span>J</span> </div>
@@ -180,23 +213,31 @@ class schedule extends Component {
                         <div className="schedule-header-item"><span>N</span> </div>
                         <div className="schedule-header-item"><span>D</span> </div>
                     </div>
+                    { this.state.loading ? <div> L O A D I N G </div> :  this.createRows() }
+                    <div className="schedule-header">
+                        <div className="schedule-header-item"></div>
+                        <div className="schedule-header-item"><span>J</span> </div>
+                        <div className="schedule-header-item"><span>F</span> </div>
+                        <div className="schedule-header-item"><span>M</span> </div>
+                        <div className="schedule-header-item"><span>A</span> </div>
+                        <div className="schedule-header-item"><span>M</span> </div>
+                        <div className="schedule-header-item"><span>J</span> </div>
+                        <div className="schedule-header-item"><span>J</span> </div>
+                        <div className="schedule-header-item"><span>A</span> </div>
+                        <div className="schedule-header-item"><span>S</span> </div>
+                        <div className="schedule-header-item"><span>O</span> </div>
+                        <div className="schedule-header-item"><span>N</span> </div>
+                        <div className="schedule-header-item"><span>D</span> </div>
+                    </div>
+                </div>
+                <div className="schedule-container">
+   
                     <ScheduleRowPicker />
-                    <div className="schedule-header">
-                        <div className="schedule-header-item"></div>
-                        <div className="schedule-header-item"><span>J</span> </div>
-                        <div className="schedule-header-item"><span>F</span> </div>
-                        <div className="schedule-header-item"><span>M</span> </div>
-                        <div className="schedule-header-item"><span>A</span> </div>
-                        <div className="schedule-header-item"><span>M</span> </div>
-                        <div className="schedule-header-item"><span>J</span> </div>
-                        <div className="schedule-header-item"><span>J</span> </div>
-                        <div className="schedule-header-item"><span>A</span> </div>
-                        <div className="schedule-header-item"><span>S</span> </div>
-                        <div className="schedule-header-item"><span>O</span> </div>
-                        <div className="schedule-header-item"><span>N</span> </div>
-                        <div className="schedule-header-item"><span>D</span> </div>
-                    </div>
+
+                    
                     <CustomButton onClick={this.addNewClass}>Add new class</CustomButton>
+                    <CustomButton onClick={this.deleteClass}>Delete class</CustomButton>
+                    <CustomButton onClick={this.foreRefresh}>refresh</CustomButton>
 
                 </div>
             </div>

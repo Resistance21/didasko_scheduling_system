@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
-import './App.css';
+import './App.scss';
 
-import { auth, createUserProfileDocument, firestore } from './firebase/firebase.utils';
+import { auth, firestore } from './firebase/firebase.utils';
 
-import {Route, Switch, Redirect} from 'react-router-dom';
+//import {Route, Switch, Redirect} from 'react-router-dom';
 
-import Signin from './components/sign-in/sign-in.component';
-import Signup from './components/sign-up/sign-up.component';
+//import Signin from './components/sign-in/sign-in.component';
+//import Signup from './components/sign-up/sign-up.component';
 import AdminPage from './Pages/admin-page/admin-page';
 import ManagerPage from './Pages/manager-page/manager-page';
 import LecturerPage from './Pages/lecturer-page/lecturer-page';
-import SignIn from './components/sign-in/sign-in.component';
-import Schedule from './components/schedule/schedule-component';
-import CSVUpload from './components/csv-uploader/csv-uploader-component'
+//import SignIn from './components/sign-in/sign-in.component';
+//import Schedule from './components/schedule/schedule-component';
+///import CSVUpload from './components/csv-uploader/csv-uploader-component'
+import SignInPage from './Pages/sign-in-page/sign-in-page'
+import CustomButton from './components/custom-button/custom-button.component'
 
 class App extends Component {
   constructor() {
@@ -22,7 +24,7 @@ class App extends Component {
       currentUser: null,
       email: '',
       displayName: '',
-      accountType: "lecturer",
+      accountType: "",
       fetching: true
 
     };
@@ -49,19 +51,19 @@ class App extends Component {
             },
           })
           console.log(this.state);
+          /* console.log(this.state);
           console.log("FALSE LOADING1:" + this.state.fetching)
           console.log(this.state.currentUser.displayName)
           console.log(this.state.currentUser.email)
           console.log(this.state.currentUser.accountType)
           console.log(this.state.currentUser.schedules)
           console.log(this.state.currentUser.subjects)
-          console.log("FALSE LOADING2:" + this.state.fetching)
+          console.log("FALSE LOADING2:" + this.state.fetching) */
         })
         // User is signed in.
       } else {
         // No user is signed in.
       }
-    console.log("FALSE LOADING2:" + this.state.fetching)
     });
 /*     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
@@ -90,19 +92,34 @@ class App extends Component {
     }); */
   }
 
+  logOut = () => {
+    auth.signOut().then(() => {
+      console.log("STATE", this.state)
+      console.log("LOGGED OUT");
+      console.log("STATE", this.state)
+      this.setState({ accountType: "" })
+      console.log("STATE", this.state)
+    }).catch(function(error) {
+      // An error happened.
+    });
+  }
+
     
 
   render() {
 
     return (
-      <div className="app-div">
-        <Signin className="inner" />
-        {/* <Signup className="inner" />
-        {this.state.accountType === "admin" ? <ManagerPage/> : null}
-        {this.state.accountType === "admin" ? <AdminPage/> : null}
-        {this.state.accountType === "manager" ? <ManagerPage/> : null}
-        {this.state.accountType === "lecturer" ? <LecturerPage /> : null}  */}
-        <Switch>
+      <div id='main-grid' className="app-div">
+        <div className='header'>header</div>
+        <div className='content-signout'>
+          <CustomButton onClick={this.logOut}>LOG OUT</CustomButton>
+        </div>
+        {this.state.accountType === "admin" ? <div className='content'> <AdminPage/></div>  : null}
+        {this.state.accountType === "manager" ? <div className='content'> <ManagerPage/></div>  : null}
+        {this.state.accountType === "lecturer" ? <div className='content'> <LecturerPage/></div>  : null}
+        {this.state.accountType === "" ? <div className='content'> <SignInPage/></div> : null}
+        
+        {/* <Switch>
         {console.log(this.state.currentUser)}
           {this.state.fetching ? <div> L O A D I N G </div> :
             <Route exact path="/schedule"  component={Schedule} />
@@ -114,7 +131,8 @@ class App extends Component {
               <SignIn className="inner" />
               <Signup className="inner" />
               {console.log("inside sing in")}
-            </div> :null} 
+            </div> :null} */} 
+          <div className='footer'>TEST</div>
       </div>
     );
   }

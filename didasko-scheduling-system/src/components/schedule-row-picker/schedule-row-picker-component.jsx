@@ -212,7 +212,7 @@ class ScheduleRowPicker extends Component {
         }
     }
 
-    onDropDownChange() {
+    onDropDownChange = () => {
         const dropDown = document.querySelector('#subjects-picker-dropdown');
         const classDropDown = document.querySelector('#subjects-class-picker-dropdown');
         let dropDownValue = dropDown.value;
@@ -235,7 +235,7 @@ class ScheduleRowPicker extends Component {
         return (
             <div>
 
-                <label for='subjects'>Pick a class</label>
+                <label >Pick a class</label>
                 <select name='subjects' id='subjects-picker-dropdown' onChange={this.onDropDownChange} ></select>
                 <select name='subjects' id='subjects-class-picker-dropdown'></select>
                 <div className='container'>
@@ -261,8 +261,8 @@ class ScheduleRowPicker extends Component {
                         <div id="mar" className="add-class-grid-row grid-row" data-name="row-mar"></div>                             
                         <div id="apr" className="add-class-grid-row grid-row" data-name="row-apr"></div>                             
                         <div id="may" className="add-class-grid-row grid-row" data-name="row-may"></div>                             
-                        <div id="june" className="add-class-grid-row grid-row" data-name="row-june"></div>                             
-                        <div id="july" className="add-class-grid-row grid-row" data-name="row-july"></div>                             
+                        <div id="jun" className="add-class-grid-row grid-row" data-name="row-jun"></div>                             
+                        <div id="jul" className="add-class-grid-row grid-row" data-name="row-jul"></div>                             
                         <div id="aug" className="add-class-grid-row grid-row" data-name="row-aug"></div>
                         <div id="sep" className="add-class-grid-row grid-row" data-name="row-sep"></div>                             
                         <div id="oct" className="add-class-grid-row grid-row" data-name="row-oct"></div>                             

@@ -1,0 +1,22 @@
+.report-header{
+    display: grid;
+    grid-template-columns: 5fr repeat(12, 1fr);
+    width: 100%;
+    //grid-column-gap: 2px;
+    //grid-row-gap: 10px;
+    background-color: #ff000005;
+    //padding-right: 100px;
+
+    .report-header-item{
+        text-align: center;
+        //font-size: 10px;;
+        //background-color: #3ebd83;
+        border: 1 px solid;
+        border-right: none;
+        //height: 20px;
+    }
+
+    .color{
+        background-color: #2e08d4; 
+    }
+}

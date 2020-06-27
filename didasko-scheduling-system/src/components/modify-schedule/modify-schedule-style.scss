@@ -1,0 +1,27 @@
+.schedule-container{
+    
+    .schedule-header{
+        display: grid;
+        grid-template-columns: [first]2fr  repeat(12, 1fr);
+        width: 100%;
+        grid-column-gap: 2px;
+        grid-row-gap: 2px;
+        background-color: #ff000005;
+
+    
+        .schedule-header-item{
+            text-align: center;
+            
+        }
+        
+    }
+
+}
+
+.new-class{
+    margin-top: 20px;
+}
+
+.grid-row{
+    height: 20px;
+}

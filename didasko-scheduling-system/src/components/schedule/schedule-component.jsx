@@ -5,20 +5,22 @@ import { auth, firestore, firestoreTwo } from '../../firebase/firebase.utils';
 import ScheduleRow from '../schedule-row/schedule-row-component';
 import CustomButton from '../custom-button/custom-button.component'
 import ScheduleRowPicker from '../schedule-row-picker/schedule-row-picker-component';
+import ScheduleRowSubject from '../schedule-row-subject/schedule-row-subject-component'
+import ScheduleInstanceAssignPicker from '../schedule-instance-assign-picker/schedule-instance-assign-picker'
 
 class schedule extends Component {
     constructor(props) {
         super(props);
 
-        //console.log("TEST COMPONET")
+        //console.log("TEST COMPONET",this.props)
 
         this.state={
             month: "",
             currentUser: {
-                uid: "",
-                email: 'test',
-                displayName: '',
-                accountType: '',
+                uid: this.props.currentUser.uid,
+                email: this.props.currentUser.email,
+                displayName: this.props.currentUser.displayName,
+                accountType: this.props.currentUser.accountType,
                 schedules: {},
                 subjects: ''
             },
@@ -27,32 +29,41 @@ class schedule extends Component {
             scheduleName: "",
             scheduleRowAmount: 0,
             loading: true,
+            changeDisplayRows: false,
+            scheduleRows: [],
+            monthWeights: {jan: 0,
+                feb: 0,
+                mar: 0,
+                apr: 0,
+                may: 0,
+                jun: 0,
+                jul: 0,
+                aug: 0,
+                sep: 0,
+                oct: 0,
+                nov: 0,
+                dec:0}
 
         }
         this.addNewClass = this.addNewClass.bind(this);
+        this.foreRefresh = this.foreRefresh.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.changeDisplayRows = this.changeDisplayRows.bind(this);
         
     }
 
     componentDidMount() {
-        console.log("COMPONENT MOUNT")
-        const user = auth.currentUser;
-        if (user) {
-            firestore.collection('user').doc(user.uid).get().then((doc) => {
+        if (this.state.currentUser !== null) {
+            firestore.collection('user').doc(this.state.currentUser.uid).get().then((doc) => {
                 this.setState({
-                    currentUser: {
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: doc.data().displayName,
-                        accountType: doc.data().accountType,
-                        schedules: doc.data().schedules,
-                        subjects: doc.data().subjects
-                    },
                     schedules: doc.data().schedules,
                     classAmount: Object.keys(doc.data().schedules.y2020).length,
-                    loading: false,
+                    //loading: false,
                     reUpdate: false
                 })
+            }).then(() => {
+                this.createSubjectRow();
+                this.setState({ loading: false })
             })
         }else {
         // No user is signed in.
@@ -60,7 +71,7 @@ class schedule extends Component {
 
     }
 
-    createRows() {
+    createRowsSingle() {
         const { schedules } = this.state;
         //const { uid } = this.state.currentUser;
         //const classDropDown = document.querySelector('#subjects-class-picker-dropdown');
@@ -69,7 +80,8 @@ class schedule extends Component {
             let subjectNum = 0;
             //let rows = [];
             let subjectAmount = Object.keys(schedules.y2020).length;
-            let classRow = [];
+        let classRow = [];
+        let subjectName = {};
             if (subjectAmount > 0) {           
                 for (let keyCheck in schedules.y2020) {
                     if (schedules.y2020.hasOwnProperty(keyCheck)) {
@@ -78,16 +90,66 @@ class schedule extends Component {
                         subjectNum += 1;
                         let subject = schedules.y2020[keyCheck].subject;
                         let subjectMonthsArray = schedules.y2020[keyCheck].months.split(",");
+                        subjectName[subject] = {};
                         //console.log("months subject: ", keyCheck)
                         //console.log("months months: ", schedules.y2020[keyCheck].months)
-                        classRow.push(<ScheduleRow key={key} classID={keyCheck} className="schedule-row" subject={subject} months={subjectMonthsArray} />)   
+                        //classRow.push(<ScheduleRow key={key} classID={keyCheck} className="schedule-row" subject={subject} months={subjectMonthsArray} />)   
                     }
+                    console.log('bulkobject', subjectName);
                 }
             }
             this.child = classRow;
             console.log('Schedule STATE', this.state.schedules)
             console.log("CHILDREN", this.child)
             return classRow  
+    }
+
+    createSubjectRow = () => {
+        const { schedules } = this.state;
+        let scheduleSubjectArray = [];
+        let subjectRows = [];
+
+        for (let keyCheck in schedules.y2020) {
+            if (!scheduleSubjectArray.includes(schedules.y2020[keyCheck].subject)) {
+                scheduleSubjectArray.push(schedules.y2020[keyCheck].subject);
+            }
+        }
+
+        console.log('schedule array', scheduleSubjectArray);
+        scheduleSubjectArray.sort();
+        scheduleSubjectArray.forEach((item, index) => {
+            const currentSubjectArray = [];
+            const subjectID = ''
+            for (let keyCheck in schedules.y2020) {
+                if (schedules.y2020[keyCheck].subject === scheduleSubjectArray[index]) {
+                    currentSubjectArray.push(schedules.y2020[keyCheck])
+                }
+            }
+            this.setState({
+                monthWeights: {
+                    jan: 0,
+                    feb: 0,
+                    mar: 0,
+                    apr: 0,
+                    may: 0,
+                    jun: 0,
+                    jul: 0,
+                    aug: 0,
+                    sep: 0,
+                    oct: 0,
+                    nov: 0,
+                    dec: 0
+            } })
+            subjectRows.push(<ScheduleRowSubject key={index} sendWeights={this.calculateWeights}
+                subjectName={scheduleSubjectArray[index]} schedule={currentSubjectArray} subjectCode={currentSubjectArray[0].subjectID}
+                year='2020' changeDisplayRows={this.state.changeDisplayRows} />) 
+        })
+        console.log('SUBJECT ROWS', subjectRows)
+        //console.log('SUBJECT ROWS state', this.state.scheduleRows)
+
+        this.setState({scheduleRows: subjectRows })
+        console.log('SUBJECT ROWS state', this.state.scheduleRows)
+        //return subjectRows;
     }
 
     addNewClass = (event) => {
@@ -99,10 +161,18 @@ class schedule extends Component {
         let selectedMonthsString = '';
         let classID = dropDownClass.value;
         const subjectString = "subject";
+        let count = 1;
 
         for (let item of selectedMonths) {
-            //console.log('ITEM', item)
-            selectedMonthsString += item.id + ',';
+            if (selectedMonths.length === 1) {
+                selectedMonthsString += item.id;
+            }else if (selectedMonths.length === 2 && count === 2) {
+                selectedMonthsString += item.id;
+            } else{
+                selectedMonthsString += item.id + ',';
+                
+            }
+            count += 1;
         }
 
         const userSchedule = firestore.collection('user').doc(uid)
@@ -112,7 +182,8 @@ class schedule extends Component {
                 y2020: {
                     [classID]: {
                         months: selectedMonthsString,
-                        subject: dropDown.value
+                        subject: dropDown.value,
+                        id: classID
                     }
                 
                 }
@@ -126,16 +197,18 @@ class schedule extends Component {
                         schedules: doc.data().schedules,
                     },
                     schedules: doc.data().schedules,
-                    subject: doc.data().subject
-                    //classAmount: subjectNum
+                    subject: doc.data().subject,
+                    scheduleRows:[]
                 }))
                 console.log("New subject added");
                 //console.log("STATE", this.state.schedules);
                 //this.forceUpdate();
                 loading = true;
                 //loading = false;
-            }
-            )
+            }).then(() => {
+                console.log('ine add class')
+                this.createSubjectRow();
+            })
             }).catch(err => {
                 console.log(err.message)
             });
@@ -183,16 +256,75 @@ class schedule extends Component {
                     loading: false,
                     reUpdate: false
                 })
+            }).then(() => {
+                this.createSubjectRow();
             })
         }else {
         // No user is signed in.
         }
         
     }
+
+    changeDisplayRows = () => {
+        this.setState({ changeDisplayRows: true })
+        console.log('button press', this.state.changeDisplayRows)
+    }
+
+    calculateWeights = ( weightHolder) => {
+        const { monthWeights } = this.state;
+        let tempWeightHolder = {
+            jan: 0,
+            feb: 0,
+            mar: 0,
+            apr: 0,
+            may: 0,
+            jun: 0,
+            jul: 0,
+            aug: 0,
+            sep: 0,
+            oct: 0,
+            nov: 0,
+            dec: 0
+        }
+        tempWeightHolder = monthWeights;
+        //tempWeightHolder += weightHolder
+        //this.setState({monthWeights: tempWeightHolder})
+        for (const key in weightHolder) {
+            tempWeightHolder[key] += weightHolder[key];
+            this.setState({
+                monthWeights: tempWeightHolder
+                    //...this.state.monthWeights,
+                    //[key]: weightHolder[key]
+            })
+        }
+/*         this.setState({
+            monthWeights:  tempWeightHolder
+                //...this.state.monthWeights,
+                //[key]: weightHolder[key]
+        }) */
+        /* this.setState({
+            monthWeights: {
+                this.state.monthWeights,
+                tempWeightHolder,
+                
+        } }) */
+        
+        console.log('weight holder schedule function', this.state.monthWeights)
+
+        /* monthWeights.forEach((item, index) => {
+            console.log('months weight', item)
+        }) */
+    }
+
+    printState = () => {
+        console.log('Current STATE', this.state)
+    }
+
     
 
 
     render() {
+        const { monthWeights } = this.state;
         return (
             <div>
             
@@ -213,7 +345,7 @@ class schedule extends Component {
                         <div className="schedule-header-item"><span>N</span> </div>
                         <div className="schedule-header-item"><span>D</span> </div>
                     </div>
-                    { this.state.loading ? <div> L O A D I N G </div> :  this.createRows() }
+                    {this.state.loading ? <div> L O A D I N G </div> : this.state.scheduleRows}
                     <div className="schedule-header">
                         <div className="schedule-header-item"></div>
                         <div className="schedule-header-item"><span>J</span> </div>
@@ -229,17 +361,34 @@ class schedule extends Component {
                         <div className="schedule-header-item"><span>N</span> </div>
                         <div className="schedule-header-item"><span>D</span> </div>
                     </div>
+                    <div className="schedule-header">
+                        <div className="schedule-header-item"></div>
+                        <div className="schedule-header-item"><span>{monthWeights.jan}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.feb}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.mar}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.apr}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.may}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.jun}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.jul}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.aug}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.sep}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.oct}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.nov}</span> </div>
+                        <div className="schedule-header-item"><span>{monthWeights.dec}</span> </div>
+                    </div>
                 </div>
-                <div className="schedule-container">
+                {/* <div className="schedule-container">
    
                     <ScheduleRowPicker />
+                    <ScheduleInstanceAssignPicker />
 
                     
                     <CustomButton onClick={this.addNewClass}>Add new class</CustomButton>
                     <CustomButton onClick={this.deleteClass}>Delete class</CustomButton>
-                    <CustomButton onClick={this.foreRefresh}>refresh</CustomButton>
+                    <CustomButton onClick={this.printState}>refresh</CustomButton>
+                    <CustomButton onClick={this.changeDisplayRows}>Change display</CustomButton>
 
-                </div>
+                </div> */}
             </div>
         )
     }

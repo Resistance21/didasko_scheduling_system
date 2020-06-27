@@ -3,7 +3,6 @@ import 'firebase/firestore';
 import 'firebase/auth';
 
 
-
   // Your web app's Firebase configuration
   var firebaseConfig = {
     apiKey: "AIzaSyAw6YU0bhhPRgyHRZTpmM1HfLc-ltfu0qM",
@@ -25,7 +24,7 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
     console.log("Inside crate profile")
     const snapShot = await userRef.get()
 
-/*     if (!snapShot.exists) {
+    if (!snapShot.exists) {
         //const { email } = userAuth;
         console.log("DISPLAYNAME: " + displayName)
         console.log("EMAIL: " + email)
@@ -35,18 +34,7 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
         const createdAt = new Date();
         let schedules = [];
         let currentYear = createdAt.getFullYear();
-        let firstSchedule = [
-            [currentYear] = [
-                subject1 = {
-                    name: "MATH"
-                }, subject2 = {
-                    name: "ENGLISH"
-                },
-                subject3 = {
-                    name: "SCIENCE"
-                },
-            ]
-        ]
+        let firstSchedule = currentYear={}
 
         schedules.push(firstSchedule);
 
@@ -61,6 +49,7 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
                     
             }
             )
+            console.log("done making account")
         }
         catch (err) {
             console.log("error making user: " + err);
@@ -69,10 +58,10 @@ export const createUserProfileDocument = async (userAuth, displayName, email, ac
         return userRef;
         //console.log(snapShot)
     
-    } */
+    }
 }
 
-  
+
 
 
 

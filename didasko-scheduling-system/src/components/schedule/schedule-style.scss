@@ -2,7 +2,7 @@
     
     .schedule-header{
         display: grid;
-        grid-template-columns: [first]5fr [second]1fr repeat(12, 1fr);
+        grid-template-columns: [first]3fr repeat(12, 1fr);
         width: 100%;
         grid-column-gap: 2px;
         grid-row-gap: 2px;
@@ -14,15 +14,6 @@
             
         }
         
-    }
-    .grid-holder{
-        display: grid;
-        grid-template-columns: [first]5fr [second]1fr repeat(12, 1fr);
-        width: 100%;
-        //grid-column-gap: 2px;
-        //grid-row-gap: 10px;
-        background-color: #ff000005;
-        margin-top: 5px;
     }
 
 }

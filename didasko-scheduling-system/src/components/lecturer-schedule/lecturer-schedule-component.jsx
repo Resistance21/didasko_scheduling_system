@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import './modify-schedule-style.scss';
+import './lecturer-schedule-style.scss';
 import { auth, firestore, firestoreTwo } from '../../firebase/firebase.utils';
 import ScheduleRow from '../schedule-row/schedule-row-component';
 import CustomButton from '../custom-button/custom-button.component'
@@ -8,11 +8,9 @@ import ScheduleRowPicker from '../schedule-row-picker/schedule-row-picker-compon
 import ScheduleRowSubject from '../schedule-row-subject/schedule-row-subject-component'
 import ScheduleInstanceAssignPicker from '../schedule-instance-assign-picker/schedule-instance-assign-picker'
 
-class ModifySchedule extends Component {
+class LecturerSchedule extends Component {
     constructor(props) {
         super(props);
-
-        //console.log("TEST COMPONET",this.props)
 
         this.state={
             month: "",
@@ -47,7 +45,6 @@ class ModifySchedule extends Component {
             selectedUserID: '',
             reRenderPicker: false,
             refreshPicker: false,
-            selectedUserData:{}
 
         }
         this.addNewClass = this.addNewClass.bind(this);
@@ -59,19 +56,15 @@ class ModifySchedule extends Component {
 
     componentDidMount() {
         firestore.collection('user').get().then((snapShot) => {
-            const dropDown = document.querySelector('#modify-schedule-dropdown');
+            //const dropDown = document.querySelector('#modify-schedule-dropdown');
             let DropDownString = [];
             snapShot.forEach(doc => {
                 console.log('Snap', doc.id)
                 DropDownString.push(doc.data().email); 
             })
-            let dropDownOrder = DropDownString.sort()
-            dropDownOrder.forEach((el) => {
-                const option = (document.createElement("option"));
-                option.text = el;
-                dropDown.add(option); 
-            })
 
+        }).then(() => {
+            this.createSubjectRow()
         })
 
     }
@@ -109,9 +102,9 @@ class ModifySchedule extends Component {
             return classRow  
     }
 
-    createSubjectRow = async () => {
-        const year = 'y2020'
-        const { schedules, selectedUserID } = this.state;
+    createSubjectRow = async() => {
+        const { schedules, selectedUserID,} = this.state;
+        const{uid} = this.state.currentUser
         let scheduleSubjectArray = [];
         let subjectRows = [];
         this.setState({
@@ -119,16 +112,18 @@ class ModifySchedule extends Component {
             //reRenderPicker:true
         })
 
-        await firestore.collection(`user/${selectedUserID}/schedules/${year}/subjects`).get().then(snapShot => {
+        await firestore.collection(`user/${uid}/schedules/y2020/subjects`).get().then(snapShot => {
             snapShot.forEach(el => {
-                scheduleSubjectArray.push(el.id)
+                scheduleSubjectArray.push(el.id);
             })
         })
 
-        const selectedUserData = await firestore.collection('user').doc(selectedUserID).get().then(doc => {
+        const selectedUserData = await firestore.collection(`user`).doc(uid).get().then(doc => {
             return doc.data();
         })
 
+
+        console.log('schedule array', scheduleSubjectArray);
         scheduleSubjectArray.sort();
         this.setState({
             monthWeights: {
@@ -148,15 +143,15 @@ class ModifySchedule extends Component {
         scheduleSubjectArray.forEach((item, index) => {
             const currentSubjectArray = [];
             const subjectID = ''
-            if (index === 0) {
-                subjectRows.push(<ScheduleRowSubject key={item} selectedUserID={selectedUserID} sendWeights={this.calculateWeights}
-                    year='2020' subjectCode={item} selectedUserData={selectedUserData} />) 
-            } else {
-            subjectRows.push(<ScheduleRowSubject key={item} selectedUserID={selectedUserID} sendWeights={this.calculateWeights}
+            /* for (let keyCheck in schedules.y2020) {
+                if (schedules.y2020[keyCheck].subject === scheduleSubjectArray[index]) {
+                    currentSubjectArray.push(schedules.y2020[keyCheck])
+                }
+            } */
+            subjectRows.push(<ScheduleRowSubject key={item} selectedUserID={uid} sendWeights={this.calculateWeights}
                 year='2020' subjectCode={item} selectedUserData={selectedUserData} />) 
-                
-            }
         })
+        console.log('SUBJECT ROWS', subjectRows)
         if (subjectRows.length === 0) {
             const dropDown = document.querySelector('#modify-schedule-dropdown');
             const dropDownValue = dropDown.value;
@@ -190,11 +185,12 @@ class ModifySchedule extends Component {
             //reRenderPicker: false
         })
         this.refreshPicker()
+        console.log('SUBJECT ROWS state', this.state.scheduleRows)
         //return subjectRows;
     }
 
     addNewClass = async (event) => {
-        const { selectedUserID, selectedUserData } = this.state
+        const { selectedUserID } = this.state
         const dropDown = document.querySelector('#subjects-picker-dropdown');
         const dropDownClass = document.querySelector('#subjects-class-picker-dropdown');
         const clickedDivs = document.querySelectorAll('.clicked');
@@ -207,10 +203,13 @@ class ModifySchedule extends Component {
         let count = 1;
 
 
+
+
         const instance = await firestore.collection('classes/y2020/classes').where('classID', '==', `${classID}`).get().then(async (snapShot) => {
             let instanceData
             let oldUserID
             snapShot.forEach(doc => {
+                console.log('selected user', doc.id);
                 instanceData = doc.data();
             })
             return instanceData
@@ -218,6 +217,7 @@ class ModifySchedule extends Component {
 
         const oldUserID = await firestore.collection('user').where('email', '==', instance.teacher).get().then(async snapShot => {
             let oldUserID
+            console.log('snapshot old user', snapShot)
             for(const snap of snapShot.docs){
                 oldUserID = snap.id
                 await firestore.collection(`user/${snap.id}/schedules/y2020/subjects/${instance.subjectCode}/instances`)
@@ -237,8 +237,7 @@ class ModifySchedule extends Component {
 
         const instanceUpdate = firestore.collection('classes/y2020/classes').doc(classID);
         instanceUpdate.update({
-            teacher: [selectedUserData.firstName, selectedUserData.lastName],
-            teacherEmail: selectedUserData.email,
+            teacher: userEmail,
             assigned: true
         })
 
@@ -359,8 +358,9 @@ class ModifySchedule extends Component {
 
     calculateWeights = ( weightHolder) => {
         const { monthWeights } = this.state;
-        const dropDown = document.querySelector('#modify-schedule-dropdown');
-        const dropDownValue = dropDown.value;
+        const {uid} = this.state.currentUser
+        //const dropDown = document.querySelector('#modify-schedule-dropdown');
+        //const dropDownValue = dropDown.value;
         let tempWeightHolder = {
             jan: 0,
             feb: 0,
@@ -386,7 +386,7 @@ class ModifySchedule extends Component {
                     //[key]: weightHolder[key]
             })
         }
-        firestore.collection('user').where('email', '==', dropDownValue).get().then(snapShot => {
+        firestore.collection('user').where('email', '==', uid).get().then(snapShot => {
             snapShot.forEach(snap => {
                 console.log("SNAP", snap)
                 firestore.collection('user').doc(snap.id).update({
@@ -431,7 +431,8 @@ class ModifySchedule extends Component {
                 this.setState({
                     schedules: doc.data().schedules,
                     selectedUserID: doc.id,
-                    selectedUserData: doc.data(),
+                    //classAmount: Object.keys(doc.data().schedules.y2020).length,
+                    //loading: false,
                     reUpdate: false
                 })
             })              
@@ -449,18 +450,14 @@ class ModifySchedule extends Component {
 
 
     render() {
-        const { monthWeights, selectedUserData } = this.state;
+        const { monthWeights } = this.state;
         return (
-            <div className='modify-schedule-container'>
-                <div id='modify-schedule-container'>
-                    <label id='modify-schedule'>{this.state.loading ? `L O A D I N G` : `Please select the Lectuere's schedule you would like to view`}</label>
+            <div className="schedule-container">
+            
+                <div id='schedule-lecturer-container'>
+                    <label id='schedule-lecturer'>{this.state.loading ? `L O A D I N G` : `Now Showing ${this.state.currentUser.email}, Current Schedule`}</label>
                 </div>
-                <div id='modify-schedule-container-picker-container'>
-                    <select name='subjects' id='modify-schedule-dropdown' onChange={this.onDropDownChange} ></select>
-
-                </div>
-
-                <div className="schedule-container">
+                {/* <select name='subjects' id='modify-schedule-dropdown' onChange={this.onDropDownChange} ></select> */}
                     <div className="schedule-header">
                         {/* <div className="schedule-header-item"></div> */}
                         <div className="schedule-header-item"><span>J</span> </div>
@@ -507,18 +504,18 @@ class ModifySchedule extends Component {
                         <div className="schedule-header-item"><span>{monthWeights.nov.toFixed(2)}</span> </div>
                         <div className="schedule-header-item"><span>{monthWeights.dec.toFixed(2)}</span> </div>
                     </div>
-                </div>
+                
                 <div className="schedule-container">
    
                     {/* <ScheduleRowPicker /> */}
                     {/* {this.state.reRenderPicker ? <div> L O A D I N G </div> : <ScheduleInstanceAssignPicker />} */}
-                    <ScheduleInstanceAssignPicker refresh={this.state.refreshPicker} selectedUserData={selectedUserData} />
+                    {/* <ScheduleInstanceAssignPicker refresh={this.state.refreshPicker} />
 
                     
                     <CustomButton onClick={this.addNewClass}>Add new Instance</CustomButton>
                     <CustomButton onClick={this.deleteClass}>Delete instance</CustomButton>
                     <CustomButton onClick={this.printState}>refresh</CustomButton>
-                    <CustomButton onClick={this.refreshPicker}>Change display</CustomButton>
+                    <CustomButton onClick={this.refreshPicker}>Change display</CustomButton> */}
 
                 </div>
             </div>
@@ -526,4 +523,4 @@ class ModifySchedule extends Component {
     }
 }
 
-export default ModifySchedule;
+export default LecturerSchedule;

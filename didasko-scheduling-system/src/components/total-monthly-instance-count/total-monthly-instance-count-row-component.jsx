@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 //import shallowCompare from 'react-addons-shallow-compare'; 
 
-import './total-monthly-instance-count-row-component';
+import './total-monthly-instance-count-row-style.scss';
 import { firestore } from '../../firebase/firebase.utils';
 
 class TotalMonthlyInstanceCountRow extends Component {
@@ -39,16 +39,29 @@ class TotalMonthlyInstanceCountRow extends Component {
                 oct: 0,
                 nov: 0,
                 dec: 0
+            },
+            assignedMonths: {
+                jan: 0,
+                feb: 0,
+                mar: 0,
+                apr: 0,
+                may: 0,
+                jun: 0,
+                jul: 0,
+                aug: 0,
+                sep: 0,
+                oct: 0,
+                nov: 0,
+                dec: 0
             }
             
         }
     }
-    
-    
-    componentDidMount = async() => {
+
+    getInstance = async () => {
         let {months, classArray} = this.state
         const node = ReactDOM.findDOMNode(this);
-        await firestore.collection('classes/y2020/classes').where("assigned", '==', true).get().then(snapShot => {
+        await firestore.collection('classes/y2020/classes').get().then(snapShot => {
             const tempArray =[];
             snapShot.forEach(el => {
                 tempArray.push(el.data())
@@ -103,22 +116,12 @@ class TotalMonthlyInstanceCountRow extends Component {
             }
         })
         this.tallyTotlaCount();
-
-
-        /* const {weights} = this.state
-        for (const key in weights) {
-            //console.log(`${key}: ${weights[key]}`);
-            if (weights[key] < 3) {
-                console.log("GREEN")
-                node.querySelector(`#${key}`).style.backgroundColor = 'green';
-            } else if (weights[key] < 6) {
-                console.log("ORANGE")
-                node.querySelector(`#${key}`).style.backgroundColor = 'orange';
-            } else if (weights[key] >= 6) {
-                console.log("RED")
-                node.querySelector(`#${key}`).style.backgroundColor = 'red';
-            }
-          } */
+    }
+    
+    
+    componentDidMount = async() => {
+        
+        this.getInstance();
     }
 
     renderHoverDiv = (top, left, divid) => {
@@ -193,51 +196,103 @@ class TotalMonthlyInstanceCountRow extends Component {
             dec: 0
         }
 
+        const tempAssignedMonths = {
+            jan: 0,
+            feb: 0,
+            mar: 0,
+            apr: 0,
+            may: 0,
+            jun: 0,
+            jul: 0,
+            aug: 0,
+            sep: 0,
+            oct: 0,
+            nov: 0,
+            dec: 0
+        }
+
         this.state.classArray.forEach((el, index) => {
             const monthsStart = el.months.split(',', 1);
             switch (monthsStart[0]) {
                 case "jan":
                     tempMonths.jan += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.jan += 1;
+                    }
                     break;
                 case "feb":
                     tempMonths.feb += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.feb += 1;
+                    }
                     break;
                 case "mar":
                     tempMonths.mar += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.mar += 1;
+                    }
                     break;
                 case "apr":
                     tempMonths.apr += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.apr += 1;
+                    }
                     break;
                 case "may":
                     tempMonths.may += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.may += 1;
+                    }
                     break;
                 case "jun":
                     tempMonths.jun += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.jun += 1;
+                    }
                     break;
                 case "jul":
                     tempMonths.jul += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.jul += 1;
+                    }
                     break;
                 case "aug":
                     tempMonths.aug += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.aug += 1;
+                    }
                     break;
                 case "sep":
                     tempMonths.sep += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.sep += 1;
+                    }
                     break;
                 case "oct":
                     tempMonths.oct += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.oct += 1;
+                    }
                     break;
                 case "nov":
                     tempMonths.nov += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.nov += 1;
+                    }
                     break;
                 case "dec":
                     tempMonths.dec += 1;
+                    if (el.assigned) {
+                        tempAssignedMonths.dec += 1;
+                    }
                     break;
                 default:
                     break;
             }
         })
         this.setState({
-            months: tempMonths
+            months: tempMonths,
+            assignedMonths: tempAssignedMonths
         })
     }
 
@@ -245,34 +300,24 @@ class TotalMonthlyInstanceCountRow extends Component {
     
     render() {
         const { teacher, hoverSubjectName, students, subjectcode, subjectid, instanceID} = this.state.hoverInfo;
-        const { months } = this.state
-        return (
-            <div style={{position: "relative"}}>
-                {this.state.hover ? <div style={this.state.styleValues}>
-                    <div> Teacher: {teacher} </div>
-                    <div> Subject Title: {this.state.subjectTitle[0]} </div>
-                    <div> Student Count: {students} </div>
-                    <div> Subject Code: {this.state.subjectCode[0]} </div>
-                    <div> Start Months: {subjectid} </div>
-                    <div> Instance ID: {instanceID} </div>
-                    </div> : null} 
-                <div className="report-grid-holder" >
-                    <div id="" className="report-grid-row" data-name="row1-date"></div>
-                    <div id="" className="report-grid-row" data-name="row1-date"></div>
-                    <div id="jan" className="report-grid-row" data-name="row-jan" >{this.state.months.jan}</div>
-                    <div id="feb" className="report-grid-row" data-name="row-feb" >{months.feb}</div>                             
-                    <div id="mar" className="report-grid-row" data-name="row-mar" >{months.mar}</div>                             
-                    <div id="apr" className="report-grid-row" data-name="row-apr" >{months.apr}</div>                             
-                    <div id="may" className="report-grid-row" data-name="row-may" >{months.may}</div>                             
-                    <div id="jun" className="report-grid-row" data-name="row-june">{months.jun}</div>                             
-                    <div id="jul" className="report-grid-row" data-name="row-july">{months.jul}</div>                             
-                    <div id="aug" className="report-grid-row" data-name="row-aug" >{months.aug}</div>
-                    <div id="sep" className="report-grid-row" data-name="row-sep" >{months.sep}</div>                             
-                    <div id="oct" className="report-grid-row" data-name="row-oct" >{months.oct}</div>                             
-                    <div id="nov" className="report-grid-row" data-name="row-nov" >{months.nov}</div>                             
-                    <div id="dec" className="report-grid-row" data-name="row-dec" >{months.dec}</div>
+        const { months, assignedMonths } = this.state
+        return ( 
+                <div className="report-total-instance-grid-holder" >
+                    <div id="" className="report-total-instance-grid-row" data-name="row1-date"></div>
+                    <div id="" className="report-total-instance-grid-row" data-name="row1-date"></div>
+                    <div id="jan" className="report-total-instance-grid-row" data-name="row-jan" >T:{months.jan}  A:{assignedMonths.jan}</div>
+                    <div id="feb" className="report-total-instance-grid-row" data-name="row-feb" >T:{months.feb}  A:{assignedMonths.feb}</div>                             
+                    <div id="mar" className="report-total-instance-grid-row" data-name="row-mar" >T:{months.mar}  A:{assignedMonths.mar}</div>                             
+                    <div id="apr" className="report-total-instance-grid-row" data-name="row-apr" >T:{months.apr}  A:{assignedMonths.apr}</div>                             
+                    <div id="may" className="report-total-instance-grid-row" data-name="row-may" >T:{months.may}  A:{assignedMonths.may}</div>                             
+                    <div id="jun" className="report-total-instance-grid-row" data-name="row-june">T:{months.jun}  A:{assignedMonths.jun}</div>                             
+                    <div id="jul" className="report-total-instance-grid-row" data-name="row-july">T:{months.jul}  A:{assignedMonths.jul}</div>                             
+                    <div id="aug" className="report-total-instance-grid-row" data-name="row-aug" >T:{months.aug}  A:{assignedMonths.aug}</div>
+                    <div id="sep" className="report-total-instance-grid-row" data-name="row-sep" >T:{months.sep}  A:{assignedMonths.sep}</div>                             
+                    <div id="oct" className="report-total-instance-grid-row" data-name="row-oct" >T:{months.oct}  A:{assignedMonths.oct}</div>                             
+                    <div id="nov" className="report-total-instance-grid-row" data-name="row-nov" >T:{months.nov}  A:{assignedMonths.nov}</div>                             
+                    <div id="dec" className="report-total-instance-grid-row" data-name="row-dec" >T:{months.dec}  A:{assignedMonths.dec}</div>
                 </div>
-            </div>
         )
     }
 }

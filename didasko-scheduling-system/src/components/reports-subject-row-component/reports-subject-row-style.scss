@@ -1,18 +1,27 @@
 .report-grid-holder{
     display: grid;
-    grid-template-columns: 1fr 4fr repeat(12, 1fr);
-    background-color: #ff000005;
+    grid-template-columns: 1fr 2fr repeat(12, 1fr);
     grid-auto-columns: auto;
-    //padding-right: 100px;
-
+    
     .report-grid-row{
         text-align: start;
         font-size: 1em;
-        background-color: #3ebd83;
         border: 1px solid;
+        border-top: none;
         border-bottom: none;
         border-right: none;
+        border-bottom: none;
         padding-left: 5px;
+
+        &.has-instance{
+            cursor: pointer;
+        }
+
+        &.has-instance:hover{
+            color: #fff;
+            background-color: #004a80;
+            border: black;
+        }
     }
 
     .report-grid-row:last-child{
@@ -23,6 +32,28 @@
     .color{
         background-color: #2e08d4; 
     }
+}
+
+.instance-info-hover{
+    background-color: #004a80;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    line-height: 1.5em;
+
+    :before{
+        content: "";
+        width: 0px;
+        height: 0px;
+        position: absolute;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid #004a80;
+        left: 25px;
+        top: -20px;
+    }
+
 }
 
 .report-grid-holder:last-child{

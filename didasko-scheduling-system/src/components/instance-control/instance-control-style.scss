@@ -1,14 +1,37 @@
-/* .sign-up{
+.instance-control-container{
     display: flex;
     align-items: center;
     flex-direction: column;
-    width: 380px;
+    width: auto;
+    
+    .form-column{
+        display: flex;
+        flex-direction: column;
+        
+        width: 30%;
 
-    .title{
-        //margin: 10px 0;
+        .custom-button{
+            margin: auto;
+            background-color: #004a80;
+            color: #ffffff;
+            width: 40%
+        }
+
+        
     }
 
-    .form-input{
-        margin: 0 0 0px 0;
+    input{
+        margin-bottom: 5px;
     }
-} */
+
+    label{
+        margin-bottom: 5px;;
+    }
+    select{
+        margin-bottom: 5px;
+    }
+    select option:disabled{
+        background-color: lightgrey;
+    }
+
+}

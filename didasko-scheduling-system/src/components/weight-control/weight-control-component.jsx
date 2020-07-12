@@ -19,146 +19,231 @@ class WeightControl extends Component {
         }
     }
 
-    handleSubmit = async event => {
-        event.preventDefault();
-        let checkedAccountType = "";
-        const checkedSubjects = [];
-        const checkBoxes = document.getElementsByName("subjects")
 
-        for (var i = 0; i < checkBoxes.length; i++) {
-            if (checkBoxes[i].checked) {
-                checkedSubjects.push(checkBoxes[i].value);
-                console.log(checkBoxes[i].value)
+    componentDidMount = async() => {
+        const weightList = await firestore.collection('weights').get().then((snapShot) => {
+            let tempWeightList = [];
+            for (const snap of snapShot.docs) {
+                tempWeightList.push([[snap.id],[snap.data()]]);     
             }
-        }
-        console.log(checkedSubjects)
 
-        const checkRadio = document.getElementsByName("accountType");
-        for (var j = 0; j < checkRadio.length; j++) {
-            if (checkRadio[j].checked) {
-                checkedAccountType = checkRadio[j].value;
-            }
-        }
-
-        const { displayName, email, password, confirmPassword, } = this.state;
-        if (password !== confirmPassword) {
-            alert("password do not match");
-            return;
-        }
-
-        try {
-            await auth.createUserWithEmailAndPassword(email, password);
-            const user = auth.currentUser;
-            //console.log(" Displayname :" + displayName + " checked Account :" + checkedAccountType + " Checksubjecy: " + checkedSubjects)
-            //console.log(JSON.stringify(user))
-            await createUserProfileDocument(user, displayName, email, checkedAccountType, checkedSubjects)
-            
-            this.setState({
-                displayName: '',
-                email: '',
-                password: '',
-                confirmPassword: ''
-            })
-        }
-        catch (error) {
-            console.error(error)
-        }
-
-    }
-
-    handleChange = (event) => {
-        const { name, value } = event.target;
-        this.setState({
-            [name]: value
+            let dropDownOrder = tempWeightList.sort()
+            return dropDownOrder
         })
-    }
 
-    componentDidMount = () => {
-        firestore.collection('subjects').doc('subjectList').get().then((snapShot) => {
-            const dropDown = document.querySelector('#subjects-picker-dropdown');
-            let DropDownString = [];
-            for (let key in snapShot.data()) {               
-                if (snapShot.data().hasOwnProperty(key)) {
-                    DropDownString.push(snapShot.data()[key].title); 
-                }
+        const weightStudentAmountList = await firestore.collection('weights/number of students weights/number break points').get().then((snapShot) => {
+            let tempWeightList = [];
+            for (const snap of snapShot.docs) {
+                tempWeightList.push([[snap.id],[snap.data()]]);     
             }
-            let dropDownOrder = DropDownString.sort()
-            dropDownOrder.forEach((el) => {
-                const option = (document.createElement("option"));
-                option.text = el;
-                dropDown.add(option); 
-            })
 
+            let dropDownOrder = tempWeightList.sort()
+            return dropDownOrder
         })
-    }
 
-    onDropDownChange = () => {
-        const dropDown = document.querySelector('#subjects-picker-dropdown');
-        const classDropDown = document.querySelector('#subjects-class-picker-dropdown');
-        let dropDownValue = dropDown.value;
 
-        const classCheck = firestore.collection('classes').where('subject', '==', dropDownValue).get().then(snapShot => {
-            snapShot.forEach(doc => {
-                const option = (document.createElement("option"));
-                option.text = doc.data().subject;
-                option.value = doc.id;
-                classDropDown.add(option)
-                 //console.log(doc.id, " => ", doc.data())
+        const weightModifyDropDown = document.querySelector('#weight-modify-picker-dropdown');
+        weightList.forEach((el) => {
+            console.log("weightlist array", el)
+            if (el[0][0] === 'number of students weights') {
                 
-            })
+            } else {
+                const option = (document.createElement("option"));
+                option.text = el[0][0];
+                option.dataset.subjectId = el[1][0] 
+                weightModifyDropDown.add(option); 
+                
+            }
         })
 
+        const weightDeleteDropDown = document.querySelector('#weight-delete-picker-dropdown');
+        weightList.forEach((el) => {
+            if (el[0][0] === 'number of students weights') {
+                
+            } else {
+                const option = (document.createElement("option"));
+                option.text = el[0][0];
+                option.dataset.subjectId = el[1][0] 
+                weightDeleteDropDown.add(option);               
+            } 
+        })
+
+        weightStudentAmountList.sort((a, b) => {
+            return a[1][0].count - b[1][0].count;
+          });
+
+        const weightStudentCountDropDown = document.querySelector('#weight-modify-student-amount-picker-dropdown');
+        console.log('weightstudetnamount', weightStudentAmountList)
+        weightStudentAmountList.forEach(el => {
+            const option = (document.createElement("option"));
+                option.text = el[0];
+                option.dataset.weightAmount = el[1][0].weight 
+                weightStudentCountDropDown.add(option); 
+        })
+
+        const weightStudentAmountDeleteDropDown = document.querySelector('#weight-delete-student-amount-picker-dropdown');
+        weightStudentAmountList.forEach(el => {
+            const option = (document.createElement("option"));
+                option.text = el[0];
+                option.dataset.weightAmount = el[1][0].weight 
+                weightStudentAmountDeleteDropDown.add(option); 
+        })
+    }
+
+    onDropDownChange = async(event) => {
+        const dropDown = document.querySelector(`#${event.target.id}`);
+        let dropDownValue = dropDown.value;
+        if (event.target.id === 'weight-modify-picker-dropdown') {
+            const weightModifyName = document.querySelector('#weight-modify-name');
+            const weightAmount = document.querySelector(`#weight-modify-number`);
+            weightModifyName.value = dropDownValue;
+            await firestore.collection('weights').doc(dropDownValue).get().then(doc => {
+                weightAmount.value = doc.data().weight;              
+            })      
+        } else if (event.target.id === 'weight-modify-student-amount-picker-dropdown') {
+            const currentWeightDropDown = document.querySelector('#weight-modify-student-amount-picker-dropdown');
+            const newWeightName = document.querySelector('#weight-modify-student-amount-name')
+            const weightAmount = document.querySelector('#weight-modify-student-amount-number');
+            newWeightName.value = currentWeightDropDown.value;
+
+
+            await firestore.collection('weights/number of students weights/number break points')
+                .doc(currentWeightDropDown.value).get().then(doc => {
+                    weightAmount.value = doc.data().weight
+                })
+        }
+
+    }
+
+    createWeight = async (event) => {
+        event.preventDefault();
+        const weightName = document.querySelector('#create-new-weight-name-input');
+        const weightAmount = document.querySelector('#create-new-weight-name-amount');
+
+        await firestore.collection('weights').doc(weightName.value).set({
+            weight: parseFloat(weightAmount.value)
+        })
+        
+    }
+
+    modifyWeight = async (event) => {
+        event.preventDefault();
+        const weightNameDropDown = document.querySelector('#weight-modify-picker-dropdown');
+        const weightModifyName = document.querySelector('#weight-modify-name');
+        const weightAmountInput = document.querySelector('#weight-modify-number');
+
+        await firestore.collection('weights').doc(weightNameDropDown.value).delete();
+
+        await firestore.collection('weights').doc(weightModifyName.value).set({
+            weight: parseFloat(weightAmountInput.value)
+        })
+
+    }
+
+    deleteWeight = async (event) => {
+        event.preventDefault();
+        const deleteWeightDropDown = document.querySelector('#weight-delete-picker-dropdown');
+
+        await firestore.collection('weights').doc(deleteWeightDropDown.value).delete()
+    }
+
+    createNewStudentAmountWeight = async (event) => {
+        event.preventDefault();
+        const weightName = document.querySelector("#weight-create-student-amount-name");
+        const weightAmount = document.querySelector('#create-new-weight-student-amount');
+
+        await firestore.collection('weights/number of students weights/number break points').doc(weightName.value).set({
+            count: parseInt(weightName.value),
+            weight: parseFloat(weightAmount.value)
+        })
+    }
+
+    modifyStudnetCountWeight = async (event) => {
+        event.preventDefault();
+        const currentWeightDropDown = document.querySelector('#weight-modify-student-amount-picker-dropdown');
+        const newWeightName = document.querySelector('#weight-modify-student-amount-name');
+        const weightAmount = document.querySelector('#weight-modify-student-amount-number');
+
+        await firestore.collection('weights/number of students weights/number break points').doc(currentWeightDropDown.value).delete();
+        await firestore.collection('weights/number of students weights/number break points').doc(newWeightName.value).set({
+            count: parseInt(newWeightName.value),
+            weight: parseFloat(weightAmount.value)
+        })
+    }
+
+    deleteStudentAmountWeight = async (event) => {
+        event.preventDefault()
+        const deleteStudentAmountWeight = document.querySelector('#weight-delete-student-amount-picker-dropdown');
+
+        await firestore.collection('weights/number of students weights/number break points').doc(deleteStudentAmountWeight.value).delete()
     }
     
 
     render() {
-        const { displayName, email, password, confirmPassword } = this.state;
         return (
-            <div className='sign-up'>
-                <h2 className='title'>Create New Subject</h2>
-                {/* <select name='subjects' id='subjects-picker-dropdown' onChange={this.onDropDownChange} ></select>
-                <select name='subjects' id='subjects-class-picker-dropdown'></select> */}
-                <FormInput className='form-input' type='text' name='displayName'
-                    value={displayName} onChange={this.handleChange} label='Display Name' required />
-                <CustomButton type='submit' >Create</CustomButton>
-                
-                <h2 className='title'>Modify Subject</h2>
-                <select name='subjects' id='subjects-picker-dropdown' onChange={this.onDropDownChange} ></select>
-                {/* <select name='subjects' id='subjects-class-picker-dropdown'></select> */}
-                <FormInput className='form-input' type='text' name='displayName'
-                    value={displayName} onChange={this.handleChange} label='Display Name' required />
-                <CustomButton type='submit' >Modify</CustomButton>
-                
-                <h2 className='title'>Delete Subject</h2>
-                <select name='subjects' id='subjects-picker-dropdown' onChange={this.onDropDownChange} ></select>
-                {/* <select name='subjects' id='subjects-class-picker-dropdown'></select> */}
-                <FormInput className='form-input' type='text' name='displayName'
-                    value={displayName} onChange={this.handleChange} label='Display Name' required />
-                <CustomButton type='submit' >Delete</CustomButton>
-                
-                {/* <form className='sign-up' onSubmit={this.handleSubmit} >
-                    <FormInput className='form-input' type='text' name='displayName'
-                        value={displayName} onChange={this.handleChange} label='Display Name' required />
+            <div className='weight-control-container'>
+                <h1>Weight Control</h1>
+                <div className='control-grid-container'>
+                    <div>
+                        <h2 className='title'>Create New Weight</h2>
+                        <form className='form-column'>
+                        <label>Weight Name</label> <input type='text' id='create-new-weight-name-input'></input>
+                        <label>Weight Amount</label> <input type='number' step='0.1' min='0' id='create-new-weight-name-amount'></input>
+                        <CustomButton type='submit' onClick={this.createWeight} >Create</CustomButton>
+
+                        </form>
+                        
+                        <h2 className='title'>Modify Weight</h2>
+                        <form className='form-column'>
+                            <label>Current Weights</label>
+                            <select name='subjects' id='weight-modify-picker-dropdown' onChange={this.onDropDownChange} ></select>
+                            <label>New Weight Name</label>
+                            <input type='text' id='weight-modify-name'></input>
+                            <label>Weight Amount</label>
+                            <input type='number' step='0.1' min='0' id='weight-modify-number'></input>
+                            <CustomButton type='submit' onClick={this.modifyWeight} >Modify</CustomButton>
+
+                        </form>
                     
-                    <FormInput className='form-input' type='email' name='email'
-                        value={email} onChange={this.handleChange} label='Email' required />
-                    <FormInput className='form-input' type='password' name='password'
-                        value={password} onChange={this.handleChange} label='Password' required />
-                    <FormInput className='form-input' type='password' name='confirmPassword'
-                        value={confirmPassword} onChange={this.handleChange} label='Confirm Password' required />
-                    <label>Admin</label>
-                    <input className='form-input' type='radio' name='accountType'
-                        value={"admin"} label='Admin' required />
-                    <label>Manager</label>
-                    <input className='form-input' type='radio' name='accountType'
-                        value={"manager"} label='Manager' required />
-                    <label>Lecturer</label>
-                    <input className='form-input' type='radio' name='accountType'
-                        value={"lecturer"} label='Lecturer' required />
-                    <CustomButton type='submit' >Create</CustomButton>
+                        <h2 className='title'>Delete Weight</h2>
+                        <form className='form-column'>
+                        <select name='subjects' id='weight-delete-picker-dropdown'></select>
+                        <CustomButton type='submit' onClick={this.deleteWeight} >Delete</CustomButton>
 
-                </form> */}
+                        </form>
 
+                    </div>
+                    <div>
+                        <h2 className='title'>Create New Student Amount Weight</h2>
+                        <form className='form-column'>
+                        <label>Weight Name</label> <input type='number' step='1' min='0' id='weight-create-student-amount-name'></input>
+                        <label>Weight Amount</label> <input type='number' step='0.1' min='0' id='create-new-weight-student-amount'></input>
+                        <CustomButton type='submit' onClick={this.createNewStudentAmountWeight} >Create</CustomButton>
+
+                        </form>
+
+                        <h2 className='title'>Modify Student Amount Weight</h2>
+                        <form className='form-column'>
+                            <label>Current Weights</label>
+                            <select name='subjects' id='weight-modify-student-amount-picker-dropdown' onChange={this.onDropDownChange} ></select>
+                            <label>New Weight Name</label>
+                            <input type='number' step='1' min='0' id='weight-modify-student-amount-name'></input>
+                            <label>Weight Amount</label>
+                            <input type='number' step='0.1' min='0' id='weight-modify-student-amount-number'></input>
+                            <CustomButton type='submit' onClick={this.modifyStudnetCountWeight} >Modify</CustomButton>
+
+                        </form>
+
+                        <h2 className='title'>Delete Student Amount Weight</h2>
+                        <form className='form-column'>
+                        <select name='subjects' id='weight-delete-student-amount-picker-dropdown'></select>
+                        <CustomButton type='submit' onClick={this.deleteStudentAmountWeight} >Delete</CustomButton>
+
+                        </form>
+
+                    </div>
+                </div>
+                
             </div>
         )
     }

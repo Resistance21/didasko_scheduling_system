@@ -1,0 +1,43 @@
+.schedule-container{
+    font-family: Arial, Helvetica, sans-serif;
+
+    #schedule-lecturer-container{
+        display: flex;
+        height: auto;
+        margin-bottom: 1em;
+        align-items: center;
+        justify-content: center;
+
+        #schedule-lecturer{
+            font-size: 2em;
+            align-self: centre;
+        }
+    }
+
+
+    
+    .schedule-header{
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        width: 100%;
+        grid-column-gap: 2px;
+        grid-row-gap: 2px;
+        background-color: #ffffff;
+
+    
+        .schedule-header-item{
+            text-align: center;
+            
+        }
+        
+    }
+
+}
+
+.new-class{
+    margin-top: 20px;
+}
+
+/* .grid-row{
+    height: 20px;
+} */

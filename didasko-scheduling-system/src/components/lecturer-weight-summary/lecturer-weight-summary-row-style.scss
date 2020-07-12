@@ -1,34 +1,38 @@
-.report-grid-holder{
+.lecturer-weight-summary-grid-holder{
     display: grid;
-    grid-template-columns: 1fr 4fr repeat(12, 1fr);
-    background-color: #ff000005;
+    grid-template-columns: 1fr 2fr repeat(12, 1fr);
+    //background-color: #ff000005;
     grid-auto-columns: auto;
+    //border-top: solid 1px black;
+    //border-bottom: solid 1px black;
     //padding-right: 100px;
+    border: 1px solid;
+    border-right: none;
+    border-left: none;
+    border-bottom: none;
 
-    .report-grid-row{
+    :first-child{
+        border-left: none;
+    }
+    
+    .lecturer-weight-summary-grid-row{
         text-align: start;
         font-size: 1em;
-        background-color: #3ebd83;
-        border: 1px solid;
-        border-bottom: none;
-        border-right: none;
+        //border: 1px solid;
+        border-right: solid 1px black;
+        //border-bottom: none;
+        //border-top: none;
         padding-left: 5px;
     }
 
-    .report-grid-row:last-child{
-        border-right: 1px solid;
+    :last-child{
+        border-right: none;
+        border-left: none;
     }
-
-
-    .color{
-        background-color: #2e08d4; 
-    }
+    
+ 
 }
 
-.report-grid-holder:last-child{
-    border-bottom: 1px solid;
-    //border-right: 1px solid;
-}
 
 
 

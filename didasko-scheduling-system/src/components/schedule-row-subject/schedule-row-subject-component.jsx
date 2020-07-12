@@ -129,7 +129,8 @@ class ScheduleRowSubject extends Component {
                 dec:0
             },
             selectedUserID: this.props.selectedUserID,
-            subjectCode: this.props.subjectCode
+            subjectCode: this.props.subjectCode,
+            selectedUserData: this.props.selectedUserData
             
 
             
@@ -153,7 +154,7 @@ class ScheduleRowSubject extends Component {
     
     
     componentDidMount = async() => {
-        const { schedule, displaySwitcher, studentCountWeights } = this.state;
+        const { schedule, displaySwitcher, studentCountWeights, selectedUserData } = this.state;
         this.setState({
             //node: ReactDOM.findDOMNode(this),
             //reDraw: true
@@ -183,24 +184,20 @@ class ScheduleRowSubject extends Component {
         })
         
         await this.colourThreeMonths();
-        //this.calculateWeights();
-        //this.colourOneMonthTwo()
-        //this.colourThreeMonths();
-        //this.calculateWeights();
         
     }
 
     
 
     colourThreeMonths = async() => {
-        const { schedule, subjectColours, weights, studentCountWeight, weightHolder,selectedUserID, subjectCode } = this.state;
+        const { schedule, subjectColours, weights, studentCountWeight, weightHolder,selectedUserID, subjectCode,selectedUserData } = this.state;
         const node = this.state.node === '' ? ReactDOM.findDOMNode(this) : this.state.node;
         this.setState({node: node})
         let bevel = 'inset 2px 2px rgba(255, 255, 255, .4), inset 0px -2px 2px rgba(0, 0, 0, .4)'
         const scheduleObj = []
         let classArray = []
         let scheduleArray=[]
-        const topRows = node.querySelectorAll('.grid-row');
+        const topRows = node.querySelectorAll('.schedule-grid-row');
         const hideRows = node.querySelectorAll('.three-row');
         topRows.forEach(item => {
             item.childNodes.forEach((i) => {
@@ -216,7 +213,6 @@ class ScheduleRowSubject extends Component {
         await firestore.collection(`user/${selectedUserID}/schedules/y2020/subjects/${subjectCode}/instances`).get().then(snapShot => {
             snapShot.forEach(el => {
                 scheduleArray.push(el.id)
-                console.log("schedule SNAP", el.id)
             })
         })
 
@@ -226,7 +222,6 @@ class ScheduleRowSubject extends Component {
                 snapShot.forEach(snap => {
                     //classArray.push(snap.data())
                     classArray.push(snap.data());
-                    console.log('SNAP CLASS', snap.data())
                 })
                 
             })
@@ -234,422 +229,290 @@ class ScheduleRowSubject extends Component {
         this.setState({
             subjectName: classArray[0].title
         })
-        
-        console.log("CLASS GET", classArray)
-        console.log("schedule GET", scheduleArray)
-        //classArray.forEach((item, indexOutter) => {
-            //await schedule.forEach(async (item, index) => {
-                //if (item.classID === i.id) {
-        //for (let [index, item] of scheduleArray)
+
         scheduleArray.forEach((item, index) => {
-                console.log("sechdulearay", item)
-                /* const instanceInfo = await firestore.collection('classes/y2020/classes').where("classID", '==', `${item.id}`).get().then(snapShot => {
-                    let snapReturn;
-                    snapShot.forEach(snap => {
-                        //classArray.push(snap.data())
-                        snapReturn = snap.data();
-                    })
-                    return snapReturn
-                }) */
                 const instanceInfo = classArray.filter(el => el.classID === item)
+            if (instanceInfo.length === 0) {
+                        
+            } else {
+                
+                    
+                let instanceWeightAmount = 0;
+                let studentCountWeightAmount = 0;
+                let totalWeightAmount = 0;
+                const studentCountWeightArray = studentCountWeight;
+                let studentCountMet = false;
+                console.log("weightcount before sort", studentCountWeightArray)
+                studentCountWeightArray.sort((a, b) => a[2] - b[2])
+                console.log("weightcount after sort", studentCountWeightArray)
 
-                console.log("INSTANCE INFO",instanceInfo)
-                    console.log("class array item", item)
-                    let instanceWeightAmount = 0;
-                    let studentCountWeightAmount = 0;
-                    let totalWeightAmount = 0;
-                    const studentCountWeightArray = studentCountWeight;
-                    let studentCountMet = false;
-                    console.log("weightcount before sort", studentCountWeightArray)
-                    studentCountWeightArray.sort((a, b) => a[2] - b[2])
-                    console.log("weightcount after sort", studentCountWeightArray)
+                weights.forEach(el => {
+                    if (instanceInfo[0].instanceType === el[0].toString()) {
+                        instanceWeightAmount = el[1];
+                    }
+                })
 
-                    weights.forEach(el => {
-                        if (instanceInfo[0].instanceType === el[0].toString()) {
-                            instanceWeightAmount = el[1];
-                        }
-                    })
+                studentCountWeightArray.forEach((el, index) => {
+                    if (instanceInfo[0].studentCount < el[2] && studentCountMet === false) {
+                        studentCountWeightAmount = el[1];
+                        studentCountMet = true;
+                    }
 
-                    studentCountWeightArray.forEach((el, index) => {
-                        if (instanceInfo[0].studentCount < el[2] && studentCountMet === false) {
-                            studentCountWeightAmount = el[1];
-                            studentCountMet = true;
-                        }
+                    if (instanceInfo[0].studentCount >= studentCountWeightArray[studentCountWeightArray.length - 1][2]
+                        && studentCountMet === false) {
+                        studentCountWeightAmount = studentCountWeightArray[studentCountWeightArray.length - 1][1];
+                        studentCountMet = true;
+                    }
 
-                        if (instanceInfo[0].studentCount >= studentCountWeightArray[studentCountWeightArray.length - 1][2]
-                            && studentCountMet === false) {
-                                studentCountWeightAmount = studentCountWeightArray[studentCountWeightArray.length - 1][1];
-                                studentCountMet = true;
-                            }
-
-                    })
+                })
 
                 console.log("WEight Amounts", instanceWeightAmount, studentCountWeightAmount)
 
-            //schedule.forEach((i, index) => {
+                totalWeightAmount = instanceWeightAmount[0] + studentCountWeightAmount[0]
+                let subjectMonthsArray
+                if (instanceInfo[0].months === 'dec,jan,feb') {
+                    subjectMonthsArray = instanceInfo[0].months.split(",", 1);
+                } else if (instanceInfo[0].months === 'nov,dec,jan') {
+                    subjectMonthsArray = instanceInfo[0].months.split(",", 2);
+                } else {
+                    subjectMonthsArray = instanceInfo[0].months.split(",", 3);
+                }
+                let monthCheck = ['', '', ''];
+            
+                subjectMonthsArray.forEach((month) => {
+                    let currentMonth = node.querySelector(`#${month}`)
+                    //let subjectColour = subjectColourSelection
+                    let currentMonthChildren = currentMonth.childNodes;
+                    currentMonthChildren.forEach((child, index) => {
+                        let arrayStore = monthCheck[index];
+                        arrayStore += child.dataset.hasclass;
+                        monthCheck[index] = arrayStore;
+                                
+                    })
+            
+                })
+            
+                if (monthCheck[0] === 'falsefalsefalse') {
+                    const rowNum = 1
+                    const rowOne = node.querySelectorAll('.row-one');
+                    rowOne.forEach(el => {
+                        el.style.height = '20px';
+                    })
+                    subjectMonthsArray.forEach((months, i) => {
+                        const div = node.querySelector(`#${months}-${rowNum}`)
+                        div.dataset.id = instanceInfo[0].classID;
+                        div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                        div.dataset.weightAmount = totalWeightAmount;
+                        div.style.backgroundColor = subjectColours[index];
+                        //div.style.boxShadow = bevel;
+                        if (i === 0) {
+                            div.innerText = instanceInfo[0].classID
+                        }
+                        if (i === 2) {
+                            div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                        }
+                        //div.style.height = "25px"
+                        div.classList.add('has-class');
+                        div.dataset.hasclass = "true";
+                        //subjectColourSelection += 1;
+                    })
+                            
+                } else if (monthCheck[1] === 'falsefalsefalse') {
+                    const rowNum = 2
+                    const rowOne = node.querySelectorAll('.row-two');
+                    rowOne.forEach(el => {
+                        el.style.height = '20px';
+                    })
+                    subjectMonthsArray.forEach((months, i) => {
+                        //console.log('months array', months)
+                        const div = node.querySelector(`#${months}-${rowNum}`)
+                        //console.log('index inner2', index)
+                        div.dataset.id = instanceInfo[0].classID;
+                        div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                        div.dataset.weightAmount = totalWeightAmount;
+                        div.style.backgroundColor = subjectColours[index];
+                        //div.style.boxShadow = bevel;
+                        div.classList.add('has-class');
+                        div.dataset.hasclass = "true";
+                        if (i === 0) {
+                            div.innerText = instanceInfo[0].classID
+                        }
+                        if (i === 2) {
+                            div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                        }
+                    })
+                            
+                } else if (monthCheck[2] === 'falsefalsefalse') {
+                    const rowNum = 3
+                    const rowOne = node.querySelectorAll('.row-three');
+                    rowOne.forEach(el => {
+                        el.style.height = '20px';
+                    })
+                    subjectMonthsArray.forEach((months, i) => {
+                        //console.log('months array', months)
+                        //console.log('index inner3', index)
+                                
+                        const div = node.querySelector(`#${months}-${rowNum}`)
+                        div.dataset.id = instanceInfo[0].classID;
+                        div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                        div.dataset.weightAmount = totalWeightAmount;
+                        div.style.backgroundColor = subjectColours[index];
+                                
+                        //div.style.boxShadow = bevel;
+                        div.classList.add('has-class');
+                        div.dataset.hasclass = "true";
+                        if (i === 0) {
+                            div.innerText = instanceInfo[0].classID
+                        }
+                        if (i === 2) {
+                            div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                        }
+                    })
+                            
+                }
+            
+                if (subjectMonthsArray.toString() === 'nov,dec') {
+                    if (monthCheck[0] === 'falsefalse') {
+                        const rowNum = 1
+                        const rowOne = node.querySelectorAll('.row-one');
+                        rowOne.forEach(el => {
+                            el.style.height = '20px';
+                        })
+                        subjectMonthsArray.forEach((months, i) => {
+                                    
+                                        
+                            //console.log('months array', months)
+                            const div = node.querySelector(`#${months}-${rowNum}`)
+                            div.dataset.id = instanceInfo[0].classID;
+                            div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                            div.dataset.weightAmount = totalWeightAmount;
+                            div.style.backgroundColor = subjectColours[index];
+                            //div.style.boxShadow = bevel;
+                            div.classList.add('has-class');
+                            div.dataset.hasclass = "true";
+                            if (i === 0) {
+                                div.innerText = instanceInfo[0].classID
+                            }
+                            if (i === 1) {
+                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            }
+                                    
+                        })
+                    }
+                    else if (monthCheck[1] === 'falsefalse') {
+                        const rowNum = 2
+                        const rowOne = node.querySelectorAll('.row-two');
+                        rowOne.forEach(el => {
+                            el.style.height = '20px';
+                        })
+                        subjectMonthsArray.forEach((months, i) => {
+                                    
+                                        
+                            //console.log('months array', months)
+                
+                            const div = node.querySelector(`#${months}-${rowNum}`)
+                            div.dataset.id = instanceInfo[0].classID;
+                            div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                            div.dataset.weightAmount = totalWeightAmount;
+                            div.style.backgroundColor = subjectColours[index];
+                            //div.style.boxShadow = bevel;
+                            div.classList.add('has-class');
+                            div.dataset.hasclass = "true";
+                            if (i === 0) {
+                                div.innerText = instanceInfo[0].classID
+                            }
+                            if (i === 1) {
+                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            }
+                                    
+                        })
+                    } else if (monthCheck[2] === 'falsefalse') {
+                        const rowNum = 3
+                        const rowOne = node.querySelectorAll('.row-three');
+                        rowOne.forEach(el => {
+                            el.style.height = '20px';
+                        })
+                        subjectMonthsArray.forEach((months, i) => {
+                            //console.log('months array', months)
+                            const div = node.querySelector(`#${months}-${rowNum}`)
+                            div.dataset.id = instanceInfo[0].classID;
+                            div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                            div.dataset.weightAmount = totalWeightAmount;
+                            div.style.backgroundColor = subjectColours[index];
+                            //div.style.boxShadow = bevel;
+                            div.classList.add('has-class');
+                            div.dataset.hasclass = "true";
+                            if (i === 0) {
+                                div.innerText = instanceInfo[0].classID
+                            }
+                            if (i === 2) {
+                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            }
+                                        
+                                    
+                        })
+                    }
+                }
+            
+                if (subjectMonthsArray.toString() === 'dec') {
+                    if (monthCheck[0] === 'false') {
+                        const rowNum = 1
+                        const rowOne = node.querySelectorAll('.row-one');
+                        rowOne.forEach(el => {
+                            el.style.height = '20px';
+                        })
+                        const div = node.querySelector(`#dec-${rowNum}`)
+                        div.setAttribute("data-id", instanceInfo[0].classID)
+                        div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                        div.dataset.weightAmount = totalWeightAmount;
+                        //div.dataset.id = item.id;
+                        div.style.backgroundColor = subjectColours[index];
+                        //div.style.boxShadow = bevel;
+                        div.classList.add('has-class');
+                        div.dataset.hasclass = "true";
+                        div.innerText = instanceInfo[0].classID
+                                
 
-                //if (item.classID === i.id) {
-                    totalWeightAmount = instanceWeightAmount[0] + studentCountWeightAmount[0]
-                        console.log("SCHEDULE OBJ", item)
-                        console.log("INSTANCE OBJ", instanceInfo)
-                        let subjectMonthsArray = instanceInfo[0].months.split(",", 3);
-                        let monthCheck = ['', '', ''];
-            
-                        subjectMonthsArray.forEach((month) => {
-                            let currentMonth = node.querySelector(`#${month}`)
-                            //let subjectColour = subjectColourSelection
-                            let currentMonthChildren = currentMonth.childNodes;
-                            currentMonthChildren.forEach((child, index) => {
-                                let arrayStore = monthCheck[index];
-                                arrayStore += child.dataset.hasclass;
-                                monthCheck[index] = arrayStore;
                                 
-                            }) 
-            
-                        })      
-            
-                        if (monthCheck[0] === 'falsefalsefalse') {
-                            const rowNum = 1
-                            const rowOne = node.querySelectorAll('.row-one');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                            subjectMonthsArray.forEach((months, i) => {
-                                const div = node.querySelector(`#${months}-${rowNum}`)
-                                div.dataset.id = instanceInfo[0].classID;
-                                div.dataset.weightAmount = totalWeightAmount;
-                                div.style.backgroundColor = subjectColours[index];
-                                //div.style.boxShadow = bevel;
-                                if (i === 0) {                                  
-                                    div.innerText = instanceInfo[0].teacher
-                                }
-                                if (i === 2) {
-                                    div.innerText = instanceInfo[0].classID
-                                }
-                                //div.style.height = "25px"
-                                div.classList.add('has-class');
-                                div.dataset.hasclass = "true";
-                                //subjectColourSelection += 1;
-                            })
-                            
-                        } else if (monthCheck[1] === 'falsefalsefalse') {
-                            const rowNum = 2
-                            const rowOne = node.querySelectorAll('.row-two');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                            subjectMonthsArray.forEach((months, i) => {
-                                //console.log('months array', months)
-                                const div = node.querySelector(`#${months}-${rowNum}`)
-                                //console.log('index inner2', index)
-                                div.dataset.id = instanceInfo[0].classID;
-                                div.dataset.weightAmount = totalWeightAmount;
-                                div.style.backgroundColor = subjectColours[index];
-                                //div.style.boxShadow = bevel;
-                                div.classList.add('has-class');
-                                div.dataset.hasclass = "true";
-                                if (i === 0) {                                  
-                                    div.innerText = instanceInfo[0].teacher
-                                }
-                                if (i === 2) {
-                                    div.innerText = instanceInfo[0].classID
-                                }
-                            })
-                            
-                        } else if (monthCheck[2] === 'falsefalsefalse') {
-                            const rowNum = 3
-                            const rowOne = node.querySelectorAll('.row-three');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                            subjectMonthsArray.forEach((months, i) => {
-                                //console.log('months array', months)
-                                //console.log('index inner3', index)
-                                
-                                const div = node.querySelector(`#${months}-${rowNum}`)
-                                div.dataset.id = instanceInfo[0].classID;
-                                div.dataset.weightAmount = totalWeightAmount;
-                                div.style.backgroundColor = subjectColours[index];
-                                
-                                //div.style.boxShadow = bevel;
-                                div.classList.add('has-class');
-                                div.dataset.hasclass = "true";
-                                if (i === 0) {                                  
-                                    div.innerText = instanceInfo[0].teacher
-                                }
-                                if (i === 2) {
-                                    div.innerText = instanceInfo[0].classID
-                                }
-                            })
-                            
-                        }
-            
-                        if (subjectMonthsArray.toString() === 'nov,dec') {
-                            if (monthCheck[0] === 'falsefalse') {
-                                const rowNum = 1
-                                const rowOne = node.querySelectorAll('.row-one');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                                subjectMonthsArray.forEach((months, i) => {
-                                    //console.log('months array', months)
-                                    const div = node.querySelector(`#${months}-${rowNum}`)
-                                    div.dataset.id = instanceInfo[0].classID;
-                                    div.dataset.weightAmount = totalWeightAmount;
-                                    div.style.backgroundColor = subjectColours[index];
-                                    //div.style.boxShadow = bevel;
-                                    div.classList.add('has-class');
-                                    div.dataset.hasclass = "true";
-                                    if (i === 0) {                                  
-                                        div.innerText = instanceInfo[0].teacher
-                                    }
-                                    if (i === 2) {
-                                        div.innerText = instanceInfo[0].classID
-                                    }
-                                })
-                            }
-                            else if (monthCheck[1] === 'falsefalse') {
-                                const rowNum = 2
-                                const rowOne = node.querySelectorAll('.row-two');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                                subjectMonthsArray.forEach((months, i) => {
-                                    //console.log('months array', months)
-            
-                                    const div = node.querySelector(`#${months}-${rowNum}`)
-                                    div.dataset.id = instanceInfo[0].classID;
-                                    div.dataset.weightAmount = totalWeightAmount;
-                                    div.style.backgroundColor = subjectColours[index];
-                                    //div.style.boxShadow = bevel;
-                                    div.classList.add('has-class');
-                                    div.dataset.hasclass = "true";
-                                    if (i === 0) {                                  
-                                        div.innerText = instanceInfo[0].teacher
-                                    }
-                                    if (i === 2) {
-                                        div.innerText = instanceInfo[0].classID
-                                    }
-                                })
-                            } else if (monthCheck[2] === 'falsefalse') {
-                                const rowNum = 3
-                                const rowOne = node.querySelectorAll('.row-three');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                                subjectMonthsArray.forEach((months, i) => {
-                                    //console.log('months array', months)
-                                    const div = node.querySelector(`#${months}-${rowNum}`)
-                                    div.dataset.id = instanceInfo[0].classID;
-                                    div.dataset.weightAmount = totalWeightAmount;
-                                    div.style.backgroundColor = subjectColours[index];
-                                    //div.style.boxShadow = bevel;
-                                    div.classList.add('has-class');
-                                    div.dataset.hasclass = "true";
-                                    if (i === 0) {                                  
-                                        div.innerText = instanceInfo[0].teacher
-                                    }
-                                    if (i === 2) {
-                                        div.innerText = instanceInfo[0].classID
-                                    }
-                                })
-                            }
-                        }
-            
-                        if (subjectMonthsArray.toString() === 'dec') {
-                            if (monthCheck[0] === 'false') {
-                                const rowNum = 1
-                                const rowOne = node.querySelectorAll('.row-one');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                                const div = node.querySelector(`#dec-${rowNum}`)
-                                div.setAttribute("data-id", instanceInfo[0].classID)
-                                div.dataset.weightAmount = totalWeightAmount;
-                                //div.dataset.id = item.id;
-                                div.style.backgroundColor = subjectColours[index];
-                                //div.style.boxShadow = bevel;
-                                div.classList.add('has-class');
-                                div.dataset.hasclass = "true";
-                                
-                            }
-                            else if (monthCheck[1] === 'false') {
-                                const rowNum = 2
-                                const rowOne = node.querySelectorAll('.row-two');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                                const div = node.querySelector(`#dec-${rowNum}`)
-                                div.dataset.id = instanceInfo[0].classID;
-                                div.dataset.weightAmount = totalWeightAmount;
-                                div.style.backgroundColor = subjectColours[index];
-                                //div.style.boxShadow = bevel;
-                                div.classList.add('has-class');
-                                div.dataset.hasclass = "true";
-                            } else if (monthCheck[2] === 'false') {
-                                const rowNum = 3
-                                const rowOne = node.querySelectorAll('.row-three');
-                            rowOne.forEach(el => {
-                                el.style.height = '20px';
-                            })
-                                const div = node.querySelector(`#dec-${rowNum}`)
-                                div.dataset.id = instanceInfo[0].classID;
-                                div.dataset.weightAmount = totalWeightAmount;
-                                div.style.backgroundColor = subjectColours[index];
-                                //div.style.boxShadow = bevel;
-                                div.classList.add('has-class');
-                                div.dataset.hasclass = "true";
-                            }
+                    }
+                    else if (monthCheck[1] === 'false') {
+                        const rowNum = 2
+                        const rowOne = node.querySelectorAll('.row-two');
+                        rowOne.forEach(el => {
+                            el.style.height = '20px';
+                        })
+                        const div = node.querySelector(`#dec-${rowNum}`)
+                        div.dataset.id = instanceInfo[0].classID;
+                        div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                        div.dataset.weightAmount = totalWeightAmount;
+                        div.style.backgroundColor = subjectColours[index];
+                        //div.style.boxShadow = bevel;
+                        div.classList.add('has-class');
+                        div.dataset.hasclass = "true";
+                        div.innerText = instanceInfo[0].classID
+                    } else if (monthCheck[2] === 'false') {
+                        const rowNum = 3
+                        const rowOne = node.querySelectorAll('.row-three');
+                        rowOne.forEach(el => {
+                            el.style.height = '20px';
+                        })
+                        const div = node.querySelector(`#dec-${rowNum}`)
+                        div.dataset.id = instanceInfo[0].classID;
+                        div.dataset.subjectCode = instanceInfo[0].subjectCode;
+                        div.dataset.weightAmount = totalWeightAmount;
+                        div.style.backgroundColor = subjectColours[index];
+                        //div.style.boxShadow = bevel;
+                        div.classList.add('has-class');
+                        div.dataset.hasclass = "true";
+                        div.innerText = instanceInfo[0].classID
+                    }
                 }
                 console.log("INSIDE THE LOOP 1")
+            }
             })
             console.log("OUTSIDE THE LOOP 1")
             this.calculateWeights(node);
             this.setState({reDraw: false}) 
-        //this.calculateWeights();
-            
-        //})
-        
-
-        /* schedule.forEach((item, index) => {
-            scheduleObj.push(item)
-            
-        })
-
-        scheduleObj.forEach((item, index) => {
-            console.log("SCHEDULE OBJ", item)
-            let subjectMonthsArray = item.months.split(",", 3);
-            let monthCheck = ['', '', ''];
-
-            subjectMonthsArray.forEach((month) => {
-                let currentMonth = node.querySelector(`#${month}`)
-                //let subjectColour = subjectColourSelection
-                let currentMonthChildren = currentMonth.childNodes;
-                currentMonthChildren.forEach((child, index) => {
-                    let arrayStore = monthCheck[index];
-                    arrayStore += child.dataset.hasclass;
-                    monthCheck[index] = arrayStore;
-                    
-                }) 
-
-            })      
-
-            if (monthCheck[0] === 'falsefalsefalse') {
-                const rowNum = 1
-                subjectMonthsArray.forEach(months => {
-                    const div = node.querySelector(`#${months}-${rowNum}`)
-                    div.dataset.id = item.id;
-                    div.style.backgroundColor = subjectColours[index];
-                    //div.style.boxShadow = bevel;
-                    div.classList.add('has-class');
-                    div.dataset.hasclass = "true";
-                    //subjectColourSelection += 1;
-                })
-                
-            } else if (monthCheck[1] === 'falsefalsefalse') {
-                const rowNum = 2
-                subjectMonthsArray.forEach(months => {
-                    //console.log('months array', months)
-                    const div = node.querySelector(`#${months}-${rowNum}`)
-                    //console.log('index inner2', index)
-                    div.dataset.id = item.id;
-                    div.style.backgroundColor = subjectColours[index];
-                    //div.style.boxShadow = bevel;
-                    div.classList.add('has-class');
-                    div.dataset.hasclass = "true";
-                })
-                
-            } else if (monthCheck[2] === 'falsefalsefalse') {
-                const rowNum = 3
-                subjectMonthsArray.forEach(months => {
-                    //console.log('months array', months)
-                    //console.log('index inner3', index)
-                    
-                    const div = node.querySelector(`#${months}-${rowNum}`)
-                    div.dataset.id = item.id;
-                    div.style.backgroundColor = subjectColours[index];
-                    //div.style.boxShadow = bevel;
-                    div.classList.add('has-class');
-                    div.dataset.hasclass = "true";
-                })
-                
-            }
-
-            if (subjectMonthsArray.toString() === 'nov,dec') {
-                if (monthCheck[0] === 'falsefalse') {
-                    const rowNum = 1
-                    subjectMonthsArray.forEach(months => {
-                        //console.log('months array', months)
-                        const div = node.querySelector(`#${months}-${rowNum}`)
-                        div.dataset.id = item.id;
-                        div.style.backgroundColor = subjectColours[index];
-                        //div.style.boxShadow = bevel;
-                        div.classList.add('has-class');
-                        div.dataset.hasclass = "true";
-                    })
-                }
-                else if (monthCheck[1] === 'falsefalse') {
-                    const rowNum = 2
-                    subjectMonthsArray.forEach(months => {
-                        //console.log('months array', months)
-
-                        const div = node.querySelector(`#${months}-${rowNum}`)
-                        div.dataset.id = item.id;
-                        div.style.backgroundColor = subjectColours[index];
-                        //div.style.boxShadow = bevel;
-                        div.classList.add('has-class');
-                        div.dataset.hasclass = "true";
-                    })
-                } else if (monthCheck[2] === 'falsefalse') {
-                    const rowNum = 3
-                    subjectMonthsArray.forEach(months => {
-                        //console.log('months array', months)
-                        const div = node.querySelector(`#${months}-${rowNum}`)
-                        div.dataset.id = item.id;
-                        div.style.backgroundColor = subjectColours[index];
-                        //div.style.boxShadow = bevel;
-                        div.classList.add('has-class');
-                        div.dataset.hasclass = "true";
-                    })
-                }
-            }
-
-            if (subjectMonthsArray.toString() === 'dec') {
-                if (monthCheck[0] === 'false') {
-                    const rowNum = 1
-                    const div = node.querySelector(`#dec-${rowNum}`)
-                    div.setAttribute("data-id", item.id)
-                    //div.dataset.id = item.id;
-                    div.style.backgroundColor = subjectColours[index];
-                    //div.style.boxShadow = bevel;
-                    div.classList.add('has-class');
-                    div.dataset.hasclass = "true";
-                    
-                }
-                else if (monthCheck[1] === 'false') {
-                    const rowNum = 2
-                    const div = node.querySelector(`#dec-${rowNum}`)
-                    div.dataset.id = item.id;
-                    div.style.backgroundColor = subjectColours[index];
-                    //div.style.boxShadow = bevel;
-                    div.classList.add('has-class');
-                    div.dataset.hasclass = "true";
-                } else if (monthCheck[2] === 'false') {
-                    const rowNum = 3
-                    const div = node.querySelector(`#dec-${rowNum}`)
-                    div.dataset.id = item.id;
-                    div.style.backgroundColor = subjectColours[index];
-                    //div.style.boxShadow = bevel;
-                    div.classList.add('has-class');
-                    div.dataset.hasclass = "true";
-                }
-            }
-                
-            //console.log('colour count', subjectColourSelection)
-        }) */
-            //console.log('colour count', subjectColourSelection)
-            /* this.calculateWeights(node);
-            this.setState({reDraw: false})  */
     }
 
     colourOneMonthTwo() {
@@ -1123,7 +986,7 @@ class ScheduleRowSubject extends Component {
             dec:0
         };
         const node = ReactDOM.findDOMNode(this);
-        const monthsDivs = node.querySelectorAll(".grid-row");
+        const monthsDivs = node.querySelectorAll(".schedule-grid-row");
         monthsDivs.forEach((item, index) => {
             const childNodes = item.childNodes;
             childNodes.forEach((i, index) => {
@@ -1153,8 +1016,6 @@ class ScheduleRowSubject extends Component {
                     div.classList.add("scheduled-class-clicked")
                 }
             })
-            //this.renderHoverDiv(positions.top, positions.left, hoveredDiv);
-            //this.setState({hover: true})
             
         }
     }
@@ -1170,118 +1031,120 @@ class ScheduleRowSubject extends Component {
         
         
         return (
-            <div style={{position: "relative"}}>
+            <div className='schedule-row-subject'>
+                <div style={{position: "relative"}}>
                 {this.state.hover ? <div style={this.state.styleValues}>
                     <div> Teacher: {teacher} </div>
                     <div> class: {hoverSubjectName} </div>
                     <div> students: {students} </div>
                     <div> subjectcode: {subjectcode} </div>
                     <div> subjectcode: {subjectid} </div>
-                    </div> : null} 
-                
-            <div data-class-id={this.props.classID} className="grid-holder" >
-
+                    </div> : null}
+                </div>  
                 <div id="" className="wheather-grid-item-date" data-name="row1-date">{subjectName}</div>
+            <div data-class-id={this.props.classID} className="schedule-grid-holder" >
+
+                {/* <div id="" className="wheather-grid-item-date" data-name="row1-date">{subjectName}</div> */}
                 
-                <div id="jan" className="grid-row" data-name="row-jan">
-                    <div id='jan-1' className='grid-subject-inner row-one' data-hasclass='false'
+                <div id="jan" className="schedule-grid-row" data-name="row-jan">
+                    <div id='jan-1' className='schedule-grid-subject-inner row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='jan-2' className='grid-subject-inner three-row row-two' data-hasclass='false'
+                    <div id='jan-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='jan-3' className='grid-subject-inner three-row row-three' data-hasclass='false'
+                    <div id='jan-3' className='schedule-grid-subject-inner three-row row-three' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>
-                <div id="feb" className="grid-row" data-name="row-feb">
-                    <div id='feb-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="feb" className="schedule-grid-row" data-name="row-feb">
+                    <div id='feb-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='feb-2' className='grid-subject-inner three-row row-two' data-hasclass='false'
+                    <div id='feb-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='feb-3' className='grid-subject-inner three-row  row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                </div>                             
-                <div id="mar" className="grid-row" data-name="row-mar">
-                    <div id='mar-1' className='grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='mar-2' className='grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='mar-3' className='grid-subject-inner three-row  row-three' data-hasclass='false'
+                    <div id='feb-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>                             
-                <div id="apr" className="grid-row" data-name="row-apr">
-                    <div id='apr-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="mar" className="schedule-grid-row" data-name="row-mar">
+                    <div id='mar-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='apr-2' className='grid-subject-inner three-row row-two' data-hasclass='false'
+                    <div id='mar-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='apr-3' className='grid-subject-inner three-row  row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                </div>                             
-                <div id="may" className="grid-row" data-name="row-may">
-                    <div id='may-1' className='grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='may-2' className='grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='may-3' className='grid-subject-inner three-row  row-three' data-hasclass='false'
+                    <div id='mar-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>                             
-                <div id="jun" className="grid-row" data-name="row-june">
-                    <div id='jun-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="apr" className="schedule-grid-row" data-name="row-apr">
+                    <div id='apr-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='jun-2' className='grid-subject-inner three-row row-two' 
+                    <div id='apr-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                    <div id='apr-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                </div>                             
+                <div id="may" className="schedule-grid-row" data-name="row-may">
+                    <div id='may-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                    <div id='may-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                    <div id='may-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                </div>                             
+                <div id="jun" className="schedule-grid-row" data-name="row-june">
+                    <div id='jun-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                    <div id='jun-2' className='schedule-grid-subject-inner three-row row-two' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='jun-3' className='grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                </div>                             
-                <div id="jul" className="grid-row " data-name="row-july">
-                    <div id='jul-1' className='grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='jul-2' className='grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='jul-3' className='grid-subject-inner three-row  row-three' 
+                    <div id='jun-3' className='schedule-grid-subject-inner three-row  row-three' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>                             
-                <div id="aug" className="grid-row " data-name="row-aug">
-                    <div id='aug-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="jul" className="schedule-grid-row " data-name="row-july">
+                    <div id='jul-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='aug-2' className='grid-subject-inner three-row row-two' 
+                    <div id='jul-2' className='schedule-grid-subject-inner three-row row-two' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='aug-3' className='grid-subject-inner three-row  row-three' 
+                    <div id='jul-3' className='schedule-grid-subject-inner three-row  row-three' 
+                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                </div>                             
+                <div id="aug" className="schedule-grid-row " data-name="row-aug">
+                    <div id='aug-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
+                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                    <div id='aug-2' className='schedule-grid-subject-inner three-row row-two' 
+                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                    <div id='aug-3' className='schedule-grid-subject-inner three-row  row-three' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>
-                <div id="sep" className="grid-row " data-name="row-sep">
-                    <div id='sep-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="sep" className="schedule-grid-row " data-name="row-sep">
+                    <div id='sep-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='sep-2' className='grid-subject-inner three-row row-two' 
+                    <div id='sep-2' className='schedule-grid-subject-inner three-row row-two' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='sep-3' className='grid-subject-inner three-row  row-three' 
+                    <div id='sep-3' className='schedule-grid-subject-inner three-row  row-three' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>                             
-                <div id="oct" className="grid-row" data-name="row-oct">
-                    <div id='oct-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="oct" className="schedule-grid-row" data-name="row-oct">
+                    <div id='oct-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='oct-2' className='grid-subject-inner three-row row-two' 
+                    <div id='oct-2' className='schedule-grid-subject-inner three-row row-two' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='oct-3' className='grid-subject-inner three-row  row-three' 
+                    <div id='oct-3' className='schedule-grid-subject-inner three-row  row-three' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>                             
-                <div id="nov" className="grid-row" data-name="row-nov">
-                    <div id='nov-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="nov" className="schedule-grid-row" data-name="row-nov">
+                    <div id='nov-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='nov-2' className='grid-subject-inner three-row row-two' 
+                    <div id='nov-2' className='schedule-grid-subject-inner three-row row-two' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='nov-3' className='grid-subject-inner three-row  row-three' 
+                    <div id='nov-3' className='schedule-grid-subject-inner three-row  row-three' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>                             
-                <div id="dec" className="grid-row" data-name="row-dec">
-                    <div id='dec-1' className='grid-subject-inner  row-one' data-hasclass='false'
+                <div id="dec" className="schedule-grid-row" data-name="row-dec">
+                    <div id='dec-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='dec-2' className='grid-subject-inner three-row row-two' 
+                    <div id='dec-2' className='schedule-grid-subject-inner three-row row-two' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
-                    <div id='dec-3' className='grid-subject-inner three-row  row-three' 
+                    <div id='dec-3' className='schedule-grid-subject-inner three-row  row-three' 
                         data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                 </div>
-                </div>
-                {/* <CustomButton onClick={this.changeDisplayRows} /> */}
             </div>
+                {/* <CustomButton onClick={this.changeDisplayRows} /> */ }
+        </div>
         )
     }
 }

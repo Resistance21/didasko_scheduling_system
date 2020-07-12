@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import { firestore } from '../../firebase/firebase.utils'
 import ReportsSubjectRow from '../../components/reports-subject-row-component/reports-subject-row-component'
+import LecturerWeightSummaryRow from '../../components/lecturer-weight-summary/lecturer-weight-summary-row-component.jsx'
+import InstanceModifyModal from '../../components/instance-modify-modal-component/instance-modify-modal-component'
+import TotalMonlthyInstanceCountRow from '../../components/total-monthly-instance-count/total-monthly-instance-count-row-component'
 
 import './reports-page-style.scss';
+import TotalMonthlyInstanceCountRow from '../../components/total-monthly-instance-count/total-monthly-instance-count-row-component';
 
 class ReportsPage extends Component {
     constructor(props) {
@@ -10,82 +14,92 @@ class ReportsPage extends Component {
         this.drawReport = this.drawReport.bind(this);
 
         this.state = {
-            loadingData: true,
+            loadingSchedule: true,
             subjectList: [],
-            classList:[]
+            classList: [],
+            lecturerWeightSummaryList: [],
+            loadingWeightSummary: true,
+            subjectWeights: [],
+            subjectInstanceList: [],
+            studentCountWeights: [],
+            modalShow: false,
+            modalInfo: {
+                oldLecturerName: '',
+                instanceType: '',
+                subjectCode: '',
+                instanceCode: '',
+                oldLecEmail: ''
+                
+            },
+            reportRows: [],
+
 
         }
 
 
     }
 
-    componentDidMount() {
-        let subjectListArray = []
-        let classListArray = []
-        firestore.collection('classes').doc('y2020').get().then((querySnapshot) => {
-            //const classListArray = []
-            //const subjectListArray = []
-            console.log("snap shoit", querySnapshot.data())
-            classListArray = Object.keys(querySnapshot.data()).map((key) => {
-                //console.log(Object.keys(querySnapshot.data()[key]).length)
-                const currentSubjectObjLength = Object.keys(querySnapshot.data()[key]).length;
-                const currentSubjectArray = [];
-                const tempClassArray = []
-                const tempQuery = querySnapshot.data();
-                for (let i = 0; i < currentSubjectObjLength; i++){
-                    tempClassArray.push([[key],
-                        [Object.values(querySnapshot.data()[key])[i].teacher],
-                        [Object.values(querySnapshot.data()[key])[i].classID],
-                        [Object.values(querySnapshot.data()[key])[i].months],
-                        [Object.values(querySnapshot.data()[key])[i].title]])
-                }
-                currentSubjectArray.push(tempClassArray)
-                return currentSubjectArray
-            })
-            this.setState({ classList: classListArray })
-            console.log("state",this.state)
-            console.log("classArracy",classListArray)
-            //console.log('classlistarray', classListArray)
+    showModal = (target) => {
+        const clickedInstance = target
+        console.log('CLIcked instance', clickedInstance)
 
-            /* Object.values(topDoc.data()).map((secondDoc) => {
-                const subjectID = topDoc;
-                Object.values(secondDoc).map((d) => {
-                    console.log("doc", subjectID)
-                    classListArray.push([['doc.subject'], [d.teacher], [d.classID], [d.months]]);
-                }) */
-                // doc.data() is never undefined for query doc snapshots
-                //classListArray.push([[doc.subject], [doc.data().teacher], [doc.id], [doc.data().months]]);
-                //console.log("Console",doc.id, " => ", doc.data().subject);
-        }).then(
-                
-            firestore.collection('subjects').doc('subjectList').get().then((querySnapshot) => {
-                //console.log(querySnapshot.data())
-                subjectListArray = Object.keys(querySnapshot.data()).map((key) => {
-                    //console.log(key)
-                    return [[querySnapshot.data()[key].title],[querySnapshot.data()[key].code]]
-                })
-                //console.log("unsort subjectlist", subjectListArray);
-                subjectListArray.sort((a, b) => {
-                    if (a[0] === b[0]) {
-                        //console.log("0", a, b);
-                        return 0
-                    } else {
-                        //console.log("other", a, b);
-                        return (a[0] > b[0]) ? 1 : -1
-                    }
-                })
-                this.setState({subjectList: subjectListArray})
-                //console.log("sort subjectlist", subjectListArray);
-                //console.log("Console");
-                this.setState({ loadingData: false })
+        this.setState({
+            modalShow: true,
+            modalInfo: {
+                subjectCode: clickedInstance.dataset.subjectCode,
+                instanceCode: clickedInstance.dataset.instanceId,
+                instanceType: clickedInstance.dataset.instanceType,
+                oldLecEmail: clickedInstance.dataset.lecturerEmail,
+                oldLecFirstName: clickedInstance.dataset.lecturerFirstName,
+                oldLecSecondName: clickedInstance.dataset.lecturerSecondName
+            }
+        });
+        console.log('click working', target)
+        console.log('click subjectcode', clickedInstance.dataset.subjectCode)
+        console.log('click instancecode', clickedInstance.dataset.instanceId)
+      };
+    
+    hideModalAfterUpdate = async (currentLec, oldLec, oldSupport, newSupport) => {
         
+        this.setState({ modalShow: false });
+        this.updateRow(this.state.modalInfo.subjectCode);
+        this.calculateAllWeightsUpdate(currentLec, oldLec, oldSupport, newSupport);
+
+    };
+
+    closeModal = async(event) => {
+        this.setState({ modalShow: false });
+        //this.updateRow(this.state.modalInfo.subjectCode);
+    };
+
+    getInstanceList = async () => {
+        let year = 'y2020'
+        let classListArray = []
+        await firestore.collection(`classes/${year}/classes/`).get().then(snapShot => {
+            for(const snap of snapShot.docs) {
+                //console.log("SNAP class", snap.data())
+                classListArray.push(snap.data())
+            }
+            console.log('class list array',classListArray)
+
+            this.setState({
+                classList: classListArray
             })
-            )
-        //this.setState({ classList: classListArray })
-        //console.log("state",this.state)
-            //console.log("unsort", classListArray);
-/*             classListArray.sort((a, b) => {
-                //console.log("0", a, b);
+        })
+    }
+
+    getSubjectList = async () => {
+        let year = 'y2020'
+        let subjectListArray = []
+
+        await firestore.collection('subjects').doc('subjectList').get().then((querySnapshot) => {
+            //console.log(querySnapshot.data())
+            subjectListArray = Object.keys(querySnapshot.data()).map((key) => {
+                //console.log(key)
+                return [[querySnapshot.data()[key].title], [querySnapshot.data()[key].code]]
+            })
+            //console.log("unsort subjectlist", subjectListArray);
+            subjectListArray.sort((a, b) => {
                 if (a[0] === b[0]) {
                     //console.log("0", a, b);
                     return 0
@@ -93,49 +107,410 @@ class ReportsPage extends Component {
                     //console.log("other", a, b);
                     return (a[0] > b[0]) ? 1 : -1
                 }
-            }) */
-            //console.log("sort", classListArray);
-            //console.log("state", this.state.classList);
+            })
+            this.setState({ subjectList: subjectListArray })
+            //this.setState({ loadingSchedule: false })
+        })
+        return subjectListArray
+    }
+
+    getWeightList = async () => {
+
+        await firestore.collection('weights').get().then(snapShot => {
+            const subjectWeightsArray = []
+            const studentCountWeightsArray = []
+            for (const snap of snapShot.docs) {
+                if (snap.id === 'number of students weights') {
+                } else {
+                    subjectWeightsArray.push([snap.id,snap.data()]);
+                    
+                }
+            }
+            this.setState({
+                subjectWeights: subjectWeightsArray,
+            })
+        })
+
+        await firestore.collection("weights/number of students weights/number break points").get().then(snapShot => {
+            let studentWeightsArray= []
+            snapShot.forEach(el => {               
+                studentWeightsArray.push([el.id, el.data().weight, el.data().count]) 
+            })
+            this.setState({
+                studentCountWeights: studentWeightsArray
+                
+            })
+        })
+    }
+
+    componentDidMount = async () => {
+        await this.getInstanceList();
+                
+        await this.getSubjectList();
         
+        await this.drawWeightSummary();
+
+        await this.getWeightList();
+
+        this.drawReport();
+
+        this.setState({
+            loadingWeightSummary: false,
+            loadingSchedule: false 
+        })
+
+        this.calculateAllWeights();
 
     }
 
-    drawReport =() => {
-            
-        const subjectListArray = this.state.subjectList;
-        const subjectListArraySort = []
-        const classListArray = this.state.classList;
-        //let keyNum = 0;
-        console.log('classlist', classListArray)
+    round = (value, decimals) => {
+        return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+      }
 
-        subjectListArray.forEach((item, index) => {
-            //console.log('item', item)
-            const currentClassArray = []
-            classListArray.forEach((i, index) => {
-                //console.log('list in', i[index][0][0][0].toString())
-                if (i.length !== 0) {
-                    if (i[0].length === 0) {
-                
-                    } else if (i[0][0][0][0].toString() === item[1].toString()) {
-                        //console.log('list in',i[0][0], item[0][0])
-                        console.log('list in', i[0][0][0][0].toString())
-                        currentClassArray.push(classListArray[index].shift())
+      calculateAllWeightsUpdate = async (currentLec, oldLec, oldSupport, newSupport) => {
+          const lecturerArray = []
+
+          if (currentLec === oldLec) {
+              lecturerArray.push(currentLec)
+              
+            } else {
+                lecturerArray.push(currentLec)
+                lecturerArray.push(oldLec)
+          }
+
+          const combinedSupport = new Set(oldSupport, newSupport);
+          const combinedSupportArray = Array.from(combinedSupport);
+          combinedSupportArray.forEach(el => {
+              lecturerArray.push(el)
+          })
+        lecturerArray.forEach(el => {          
+            const lect = document.querySelectorAll(`[data-lecturer-email="${el}"]`);
+            let weightObj = {
+                jan: 0,
+                feb: 0,
+                mar: 0,
+                apr: 0,
+                may: 0,
+                jun: 0,
+                jul: 0,
+                sep: 0,
+                aug: 0,
+                oct: 0,
+                nov: 0,
+                dec: 0
+    
+            }
+    
+            lect.forEach(el => {
+                switch (el.id) {
+                    case `jan`:
+                        weightObj={
+                            ...weightObj,
+                            jan: weightObj.jan + parseFloat(el.dataset.weightAmount),
+                            feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
+                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `feb`:
+                        weightObj={
+                            ...weightObj,
+                            feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
+                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
+                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2)
+                        }
+                        break;
+                    case `mar`:
+                        weightObj={
+                            ...weightObj,
+                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
+                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2),
+                            may: weightObj.may + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `apr`:
+                        weightObj={
+                            ...weightObj,
+                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2), 
+                            may: weightObj.may + parseFloat(el.dataset.weightAmount),
+                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `may`:
+                        weightObj={
+                            ...weightObj,
+                            may: weightObj.may + parseFloat(el.dataset.weightAmount),
+                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
+                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `jun`:
+                        weightObj={
+                            ...weightObj,
+                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
+                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
+                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `jul`:
+                        weightObj={
+                            ...weightObj,
+                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
+                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
+                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `aug`:
+                        weightObj={
+                            ...weightObj,
+                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
+                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
+                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `sep`:
+                        weightObj={
+                            ...weightObj,
+                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
+                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
+                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `oct`:
+                        weightObj={
+                            ...weightObj,
+                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
+                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
+                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `nov`:
+                        weightObj={
+                            ...weightObj,
+                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
+                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                        }
+                        break;
+                    case `dec`:
+                        weightObj={
+                            ...weightObj,
+                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                        }
+                        break;
+                    default:{
+    
                     }
-                }
-                //console.log('list',item)
+                }             
             })
-            //console.log("currentClass", currentClassArray)
-            subjectListArraySort.push(<ReportsSubjectRow key={index} subjectCode={item[1]} subjectTitle={item[0]} subjectClasses={currentClassArray} />)
-            //console.log('subjectlist array sort', subjectListArraySort)
+            console.log('test teacher', el)
+            console.log('weightObj', weightObj)
+        })
+    }
+
+    calculateAllWeights = async () => {
+        const lecturerArray = []
+        await firestore.collection('user').get().then(snapShot => {
+            snapShot.forEach(snap => {
+                lecturerArray.push(snap.data().email);
+            })
+        })
+        lecturerArray.forEach(el => {          
+            const lect = document.querySelectorAll(`[data-lecturer-email="${el}"]`);
+            let weightObj = {
+                jan: 0,
+                feb: 0,
+                mar: 0,
+                apr: 0,
+                may: 0,
+                jun: 0,
+                jul: 0,
+                aug: 0,
+                sep: 0,
+                oct: 0,
+                nov: 0,
+                dec: 0
+    
+            }
+    
+            lect.forEach(el => {
+                switch (el.id) {
+                    case `jan`:
+                        weightObj={
+                            ...weightObj,
+                            jan: weightObj.jan + parseFloat(el.dataset.weightAmount),
+                            feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
+                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `feb`:
+                        weightObj={
+                            ...weightObj,
+                            feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
+                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
+                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2)
+                        }
+                        break;
+                    case `mar`:
+                        weightObj={
+                            ...weightObj,
+                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
+                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2),
+                            may: weightObj.may + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `apr`:
+                        weightObj={
+                            ...weightObj,
+                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2), 
+                            may: weightObj.may + parseFloat(el.dataset.weightAmount),
+                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `may`:
+                        weightObj={
+                            ...weightObj,
+                            may: weightObj.may + parseFloat(el.dataset.weightAmount),
+                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
+                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `jun`:
+                        weightObj={
+                            ...weightObj,
+                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
+                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
+                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `jul`:
+                        weightObj={
+                            ...weightObj,
+                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
+                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
+                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `aug`:
+                        weightObj={
+                            ...weightObj,
+                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
+                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
+                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `sep`:
+                        weightObj={
+                            ...weightObj,
+                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
+                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
+                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `oct`:
+                        weightObj={
+                            ...weightObj,
+                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
+                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
+                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount)
+                        }
+                        break;
+                    case `nov`:
+                        weightObj={
+                            ...weightObj,
+                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
+                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                        }
+                        break;
+                    case `dec`:
+                        weightObj={
+                            ...weightObj,
+                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                        }
+                        break;
+                    default:{
+    
+                    }
+                }             
+            })
+            console.log('test teacher', el)
+            console.log('weightObj', weightObj)
+        })
+    }
+
+    drawWeightSummary = async() => {
+        let weightListArray = []
+        let lecturerListArray = []
+
+        await firestore.collection('user').get().then((querySnapshot) => {
+            querySnapshot.forEach(snap => {
+                console.log("snap shot", snap.data())
+                lecturerListArray.push(snap.data())
+
+            })
+            lecturerListArray.sort((a, b) => {
+                if (a.displayName === b.displayName) {
+                    //console.log("0", a, b);
+                    return 0
+                } else {
+                    //console.log("other", a, b);
+                    return (a.displayName > b.displayName) ? 1 : -1
+                }
+            })
+
+            lecturerListArray.forEach((item, index) => {
+                weightListArray.push(<LecturerWeightSummaryRow key={item.email} weights={item.weights} firstName={item.firstName} lastName={item.lastName} email={item.email} />)
+            })
+
+            this.setState({
+                lecturerWeightSummaryList: weightListArray,
+            })
         })
 
-        /* for (let key in subjectList) {
-            subjectListArray.push(<ReportsSubjectRow key={keyNum} subjectCode={subjectList[key].code} subjectTitle={subjectList[key].title} />)
-            keyNum += 1
-        } */
-        //console.log("array",subjectListArray)
-        //console.log('subjectlist array sort', subjectListArraySort)
-        return subjectListArraySort;
+    }
+
+    updateRow = async(subjectCode) => {
+        const index = this.state.reportRows.findIndex(el => el.key === subjectCode);
+        const year = 'y2020'
+        const rows = [...this.state.reportRows] // important to create a copy, otherwise you'll modify state outside of setState call
+        const currentClassArray = []
+        await firestore.collection(`classes/${year}/classes`).where('subjectCode', '==', subjectCode).get().then(snapShot => {
+            snapShot.forEach(snap => {
+                currentClassArray.push(snap.data())
+            })
+        })
+        const row = <ReportsSubjectRow key={subjectCode} subjectCode={subjectCode} subjectTitle={currentClassArray[0].title}
+            subjectClasses={currentClassArray} subjectWeights={this.state.subjectWeights} studentCountWeights={this.state.studentCountWeights}
+            showModal={this.showModal}/>
+        rows[index] = row;
+        this.setState({reportRows: rows});
+    }
+
+    drawReport = async() => {
+            
+        const subjectListArray = this.state.subjectList;
+        const subjectWeights = this.state.subjectWeights;
+        const subjectListArraySort = [];
+        const studentCountWeights = this.state.studentCountWeights  
+        const classListArray = this.state.classList;
+
+        subjectListArray.forEach((item, index) => {
+            const currentClassArray = []
+            classListArray.forEach((i, index) => {
+                if (Object.entries(i).length > 0) {
+                     if (i.subjectCode === item[1].toString()) {
+                        currentClassArray.push(classListArray[index])
+                    }
+                }
+            })
+            subjectListArraySort.push(<ReportsSubjectRow key={item[1]} subjectCode={item[1]} subjectTitle={item[0]}
+                subjectClasses={currentClassArray} subjectWeights={subjectWeights} studentCountWeights={studentCountWeights}
+                showModal={this.showModal}/>)
+
+        })
+        this.setState({
+            reportRows: subjectListArraySort
+        })
+        console.log("reportRows", this.state.reportRows)
+        //return subjectListArraySort;
 
     } 
 
@@ -164,9 +539,54 @@ class ReportsPage extends Component {
 
 
     render() {
-        const {loadingData} =this.state
+        const {loadingSchedule, loadingWeightSummary,reportRows, lecturerWeightSummaryList} =this.state
         return (
             <div>
+
+                <InstanceModifyModal show={this.state.modalShow} hideModalAfterUpdate={this.hideModalAfterUpdate}
+                    closeModal={this.closeModal} instanceInfo={this.state.modalInfo}>
+
+                </InstanceModifyModal>
+
+                <div className="report-container">
+                    <div className="report-header">
+                        <div className="report-header-item"></div>
+                        <div className="report-header-item"><span>J</span> </div>
+                        <div className="report-header-item"><span>F</span> </div>
+                        <div className="report-header-item"><span>M</span> </div>
+                        <div className="report-header-item"><span>A</span> </div>
+                        <div className="report-header-item"><span>M</span> </div>
+                        <div className="report-header-item"><span>J</span> </div>
+                        <div className="report-header-item"><span>J</span> </div>
+                        <div className="report-header-item"><span>A</span> </div>
+                        <div className="report-header-item"><span>S</span> </div>
+                        <div className="report-header-item"><span>O</span> </div>
+                        <div className="report-header-item"><span>N</span> </div>
+                        <div className="report-header-item"><span>D</span> </div>
+                    </div>
+                        <TotalMonthlyInstanceCountRow className="report-header"/>
+                    <div>
+                    {/* {loadingSchedule ? <div>loading</div> : this.drawReport()} */}
+                    {loadingSchedule ? <div>loading</div> : reportRows}
+
+                    </div>
+                    <div className="report-header">
+                        <div className="report-header-item"></div>
+                        <div className="report-header-item"><span>J</span> </div>
+                        <div className="report-header-item"><span>F</span> </div>
+                        <div className="report-header-item"><span>M</span> </div>
+                        <div className="report-header-item"><span>A</span> </div>
+                        <div className="report-header-item"><span>M</span> </div>
+                        <div className="report-header-item"><span>J</span> </div>
+                        <div className="report-header-item"><span>J</span> </div>
+                        <div className="report-header-item"><span>A</span> </div>
+                        <div className="report-header-item"><span>S</span> </div>
+                        <div className="report-header-item"><span>O</span> </div>
+                        <div className="report-header-item"><span>N</span> </div>
+                        <div className="report-header-item"><span>D</span> </div>
+                    </div>
+                </div>
+
                 <div className="report-container">
                     <div className="report-header">
                         <div className="report-header-item"></div>
@@ -184,7 +604,7 @@ class ReportsPage extends Component {
                         <div className="report-header-item"><span>D</span> </div>
                     </div>
                     <div>
-                    {loadingData ? <div>loading</div> : this.drawReport()}
+                        {loadingWeightSummary ? <div>loading</div> : <div className='lecturer-weight-summary-holder'>{lecturerWeightSummaryList}</div>}
 
                     </div>
                     <div className="report-header">

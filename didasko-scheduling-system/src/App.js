@@ -16,7 +16,7 @@ import LecturerPage from './Pages/lecturer-page/lecturer-page';
 import CSVUpload from './components/csv-uploader/csv-uploader-component'
 import SignInPage from './Pages/sign-in-page/sign-in-page'
 import CustomButton from './components/custom-button/custom-button.component'
-import ScheduleRowSubject from './components/schedule-row-subject/schedule-row-subject-component'
+//import ScheduleRowSubject from './components/schedule-row-subject/schedule-row-subject-component'
 
 class App extends Component {
   constructor() {
@@ -97,35 +97,19 @@ class App extends Component {
     return (
       <div className="app-div">
           <div id='main-grid'>
-            <div className='header'>header</div>
-          <div className='content-signout'>
-              <CSVUpload />
-            {/* <CustomButton onClick={this.logOut}>LOG OUT</CustomButton> */}
-            <Route render={({ history }) => (
-              <CustomButton onClick={() => { history.push('/'); this.logOut()} }>Logout</CustomButton>   
-                )} />
+          <div className='header'>header
+            <CustomButton onClick={this.logOut}>LOG OUT</CustomButton>
             </div>
-            {this.state.currentUser.accountType === "admin" ? <div className='content'> <AdminPage className="lecturer-page" currentUser={this.state.currentUser} /></div> : null}
-            {this.state.currentUser.accountType === "manager" ? <div className='content'> <ManagerPage className="lecturer-page" currentUser={this.state.currentUser} /></div> : null}
-            {this.state.currentUser.accountType === "lecturer" ? <div className='content'> <LecturerPage className="lecturer-page" currentUser={this.state.currentUser} /></div> : null}
+            <CSVUpload />
+            {/* <div className='content-signout'> */}
+            {/* <Route render={({ history }) => (<CustomButton onClick={() => { history.push('/'); this.logOut()} }>Logout</CustomButton>   )} /> */}
+            {this.state.currentUser.accountType === "admin" ? <AdminPage className="lecturer-page" currentUser={this.state.currentUser} />: null}
+            {this.state.currentUser.accountType === "manager" ? <ManagerPage className="lecturer-page" currentUser={this.state.currentUser} /> : null}
+            {this.state.currentUser.accountType === "lecturer" ? <LecturerPage className="lecturer-page" currentUser={this.state.currentUser} />: null}
             {this.state.currentUser.accountType === "" ? <div className='content'> <SignInPage /></div> : null}
-            
-            
-            {/* <Switch>
-            {console.log(this.state.currentUser)}
-              {this.state.fetching ? <div> L O A D I N G </div> :
-                <Route exact path="/schedule"  component={Schedule} />
-              }
-            </Switch>
-              <CSVUpload />
-            {this.state.currentUser === null ?
-                <div className="app-div">
-                  <SignIn className="inner" />
-                  <Signup className="inner" />
-                  {console.log("inside sing in")}
-                </div> :null} */}
-                <div className='footer'>TEST</div>
-            </div>
+            <div className='footer'>TEST</div>
+        {/* </div> */}
+        </div>
       </div>
     );
   }

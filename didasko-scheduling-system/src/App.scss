@@ -1,7 +1,13 @@
+*{
+  font-family: Arial, Helvetica, sans-serif;
+
+}
+
 body{
   font-family: 'Open Sans Condensed';
   padding: 0px;
   margin: 0px;
+  background: #e9ecef;
 }
 
 a {
@@ -17,18 +23,17 @@ a {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  
-
 }
 
-.header{ grid-column: 1/3; background-color: orange;}
-.menu{ grid-column: 1; background-color: orchid; }
-.content{ 
+.menu{ 
+  grid-column: 1/2; 
+  background-color: orchid; 
+}
+
+.footer{
   grid-column: 1/3; 
-  background-color: blue;
-  height: 100%; 
+  background-color: powderblue;
 }
-.footer{grid-column: 1/3; background-color: powderblue;}
 
 .content-signout{
   grid-column: 1/3; 
@@ -40,10 +45,53 @@ a {
   display: grid;
   height: 100vh;
   width: 100vw;
-  grid-template-columns: 1fr 5fr;
+  grid-template-columns: repeat(2, 1fr); //1fr 5fr;
+  background: #e9ecef;
 
+  .header{ 
+    grid-column: 1/3;
+    background: #004a80;
+    box-shadow: 1px 3px 5px rgba(0,0,0,.1);
+    height: 50px;
+  }
+
+  .account-content{
+    grid-column: 1/3; 
+    display: grid;
+    height: auto;
+    width: 98%;
+    grid-template-columns: 1fr 6fr;
+    padding-top: 10px;
+    margin-bottom: 10px;
+
+    #navbar{
+      //grid-column: 1/2;
+      padding-left: 10px;
+      padding-right: 10px;
+      margin-right: 1em;
+      display: flex;
+      flex-direction: column;
+      background: #e9ecef;
+    
+      #nav-bar-image{
+        margin-bottom: 1rem;
+        box-shadow: 1px 3px 5px rgba(0,0,0,.1);
+      }
+    
+      .custom-button{
+        margin-bottom: 2px;
+        box-shadow: 1px 3px 5px rgba(0,0,0,.1);
+      }
+    }
+  
+    .content{ 
+      //grid-column: 2/3;
+      padding: 2%;
+      background: #ffffff;
+      height: auto;
+      box-shadow: 1px 3px 5px rgba(0,0,0,.1); 
+    }
+  
+  }
 }
 
-.inner{
-  margin: 100px;
-}

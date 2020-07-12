@@ -42,7 +42,10 @@ class schedule extends Component {
                 sep: 0,
                 oct: 0,
                 nov: 0,
-                dec:0}
+                dec: 0
+            },
+            selectedUserID: '',
+            selectedUserData:{}
 
         }
         this.addNewClass = this.addNewClass.bind(this);
@@ -58,6 +61,7 @@ class schedule extends Component {
                 this.setState({
                     schedules: doc.data().schedules,
                     classAmount: Object.keys(doc.data().schedules.y2020).length,
+                    selectedUserID: this.state.currentUser.uid,
                     //loading: false,
                     reUpdate: false
                 })
@@ -104,16 +108,16 @@ class schedule extends Component {
             return classRow  
     }
 
-    createSubjectRow = () => {
-        const { schedules } = this.state;
+    createSubjectRow = async() => {
+        const { schedules, selectedUserID } = this.state;
         let scheduleSubjectArray = [];
         let subjectRows = [];
 
-        for (let keyCheck in schedules.y2020) {
-            if (!scheduleSubjectArray.includes(schedules.y2020[keyCheck].subject)) {
-                scheduleSubjectArray.push(schedules.y2020[keyCheck].subject);
-            }
-        }
+        await firestore.collection(`user/${selectedUserID}/schedules/y2020/subjects`).get().then(snapShot => {
+            snapShot.forEach(el => {
+                scheduleSubjectArray.push(el.id)
+            })
+        })
 
         console.log('schedule array', scheduleSubjectArray);
         scheduleSubjectArray.sort();
@@ -140,9 +144,8 @@ class schedule extends Component {
                     nov: 0,
                     dec: 0
             } })
-            subjectRows.push(<ScheduleRowSubject key={index} sendWeights={this.calculateWeights}
-                subjectName={scheduleSubjectArray[index]} schedule={currentSubjectArray} subjectCode={currentSubjectArray[0].subjectID}
-                year='2020' changeDisplayRows={this.state.changeDisplayRows} />) 
+            subjectRows.push(<ScheduleRowSubject key={item} selectedUserID={selectedUserID} sendWeights={this.calculateWeights}
+                year='2020' subjectCode={item} />)  
         })
         console.log('SUBJECT ROWS', subjectRows)
         //console.log('SUBJECT ROWS state', this.state.scheduleRows)

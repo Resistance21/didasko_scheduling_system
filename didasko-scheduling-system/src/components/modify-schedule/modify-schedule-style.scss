@@ -1,4 +1,33 @@
-.schedule-container{
+.modify-schedule-container{
+    
+
+    #modify-schedule-container{
+        font-family: Arial, Helvetica, sans-serif;
+        display: flex;
+        height: auto;
+        margin-bottom: 1em;
+        align-items: center;
+        justify-content: center;
+
+        #modify-schedule{
+            font-size: 2em;
+            align-self: centre;
+            
+        }
+    }
+
+    #modify-schedule-container-picker-container{
+        display: flex;
+        height: auto;
+        margin-bottom: 1em;
+        align-items: center;
+        justify-content: center;
+
+        #modify-schedule-dropdown{
+            width: auto;
+            font-size: 1.5em;
+        }
+    }
     
     .schedule-header{
         display: grid;
@@ -7,10 +36,12 @@
         grid-column-gap: 2px;
         grid-row-gap: 2px;
         background-color: #ff000005;
+        //color: white;
 
     
         .schedule-header-item{
             text-align: center;
+            margin-bottom: 10px;
             
         }
         

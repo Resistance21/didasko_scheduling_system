@@ -13,7 +13,8 @@ class LecturerWeightSummaryRow extends Component {
 
         this.state={
             weights: this.props.weights,
-            lecturerName: this.props.lecturerName,
+            firstName: this.props.firstName,
+            lastName: this.props.lastName,
             email: this.props.email,
             hoverInfo: {
                 teacher: 'John',
@@ -106,34 +107,24 @@ class LecturerWeightSummaryRow extends Component {
     
     render() {
         const { teacher, hoverSubjectName, students, subjectcode, subjectid, instanceID} = this.state.hoverInfo;
-        const { lecturerName, email,weights } = this.state
-        return (
-            <div style={{position: "relative"}}>
-                {this.state.hover ? <div style={this.state.styleValues}>
-                    <div> Teacher: {teacher} </div>
-                    <div> Subject Title: {this.state.subjectTitle[0]} </div>
-                    <div> Student Count: {students} </div>
-                    <div> Subject Code: {this.state.subjectCode[0]} </div>
-                    <div> Start Months: {subjectid} </div>
-                    <div> Instance ID: {instanceID} </div>
-                    </div> : null} 
-                <div className="report-grid-holder" >
-                    <div id="" className="report-grid-row" data-name="row1-date">{lecturerName}</div>
-                    <div id="" className="report-grid-row" data-name="row1-date">{email}</div>
-                    <div id="jan" className="report-grid-row" data-name="row-jan" >{weights.jan.toFixed(2)}</div>
-                    <div id="feb" className="report-grid-row" data-name="row-feb" >{weights.feb.toFixed(2)}</div>                             
-                    <div id="mar" className="report-grid-row" data-name="row-mar" >{weights.mar.toFixed(2)}</div>                             
-                    <div id="apr" className="report-grid-row" data-name="row-apr" >{weights.apr.toFixed(2)}</div>                             
-                    <div id="may" className="report-grid-row" data-name="row-may" >{weights.may.toFixed(2)}</div>                             
-                    <div id="jun" className="report-grid-row" data-name="row-june">{weights.jun.toFixed(2)}</div>                             
-                    <div id="jul" className="report-grid-row" data-name="row-july">{weights.jul.toFixed(2)}</div>                             
-                    <div id="aug" className="report-grid-row" data-name="row-aug" >{weights.aug.toFixed(2)}</div>
-                    <div id="sep" className="report-grid-row" data-name="row-sep" >{weights.sep.toFixed(2)}</div>                             
-                    <div id="oct" className="report-grid-row" data-name="row-oct" >{weights.oct.toFixed(2)}</div>                             
-                    <div id="nov" className="report-grid-row" data-name="row-nov" >{weights.nov.toFixed(2)}</div>                             
-                    <div id="dec" className="report-grid-row" data-name="row-dec" >{weights.dec.toFixed(2)}</div>
+        const { firstName, lastName, email,weights } = this.state
+        return (    
+                <div className="lecturer-weight-summary-grid-holder" >
+                    <div className="lecturer-weight-summary-grid-row" data-name="row1-date">{`${firstName} ${lastName}`}</div>
+                    <div className="lecturer-weight-summary-grid-row" data-name="row1-date">{email}</div>
+                    <div id="jan" className="lecturer-weight-summary-grid-row" data-name="row-jan" >{weights.jan.toFixed(2)}</div>
+                    <div id="feb" className="lecturer-weight-summary-grid-row" data-name="row-feb" >{weights.feb.toFixed(2)}</div>                             
+                    <div id="mar" className="lecturer-weight-summary-grid-row" data-name="row-mar" >{weights.mar.toFixed(2)}</div>                             
+                    <div id="apr" className="lecturer-weight-summary-grid-row" data-name="row-apr" >{weights.apr.toFixed(2)}</div>                             
+                    <div id="may" className="lecturer-weight-summary-grid-row" data-name="row-may" >{weights.may.toFixed(2)}</div>                             
+                    <div id="jun" className="lecturer-weight-summary-grid-row" data-name="row-june">{weights.jun.toFixed(2)}</div>                             
+                    <div id="jul" className="lecturer-weight-summary-grid-row" data-name="row-july">{weights.jul.toFixed(2)}</div>                             
+                    <div id="aug" className="lecturer-weight-summary-grid-row" data-name="row-aug" >{weights.aug.toFixed(2)}</div>
+                    <div id="sep" className="lecturer-weight-summary-grid-row" data-name="row-sep" >{weights.sep.toFixed(2)}</div>                             
+                    <div id="oct" className="lecturer-weight-summary-grid-row" data-name="row-oct" >{weights.oct.toFixed(2)}</div>                             
+                    <div id="nov" className="lecturer-weight-summary-grid-row" data-name="row-nov" >{weights.nov.toFixed(2)}</div>                             
+                    <div id="dec" className="lecturer-weight-summary-grid-row" data-name="row-dec" >{weights.dec.toFixed(2)}</div>
                 </div>
-            </div>
         )
     }
 }

@@ -1,14 +1,47 @@
-/* .sign-up{
+.weight-control-container{
     display: flex;
     align-items: center;
     flex-direction: column;
-    width: 380px;
+    width: auto;
 
-    .title{
-        //margin: 10px 0;
-    }
+    .control-grid-container{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        justify-items: center;
+    
+        .form-column{
+            display: flex;
+            flex-direction: column;           
+            width: 100%;
+    
+            .custom-button{
+                margin: auto;
+                background-color: #004a80;
+                color: #ffffff;
+                width: 40%
+            }
+       
+        }
 
-    .form-input{
-        margin: 0 0 0px 0;
+        input{
+            margin-bottom: 5px;
+            
+            width:350px;    
+        }
+    
+        label{
+            margin-bottom: 5px;
+        }
+        select{
+            margin-bottom: 5px;
+            width:350px;
+        }
+        select option:disabled{
+            background-color: lightgrey;
+        }
     }
-} */
+    
+
+
+}

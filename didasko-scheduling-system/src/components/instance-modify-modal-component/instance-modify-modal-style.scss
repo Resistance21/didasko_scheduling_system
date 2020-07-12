@@ -1,0 +1,55 @@
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width:100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 5;
+  }
+  
+  .modal-main {
+    position:fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 0px;
+    background: white;
+    width: 50%;
+    height: auto;
+    top:50%;
+    left:50%;
+    transform: translate(-50%,-50%);
+
+    .form-column{
+      width: 75%;
+    }
+
+    #support-lecturer-container{
+      width: 100%
+    }
+    
+    .modify-support-lecturer-name{
+      width: 100%
+    }
+    #modify-support-lecturer-name-first{
+      width: 100%
+    }
+    .modify-buttons{
+      margin-top: 8px;
+    }
+  }
+  
+  .display-block {
+    display: block;
+  }
+  
+  .display-none {
+    display: none;
+  }
+
+.form-column{
+    display: flex;
+    flex-direction: column;
+    width: 25%
+}

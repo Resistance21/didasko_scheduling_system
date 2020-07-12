@@ -1,24 +1,27 @@
 import React from 'react';
-import {Route, Switch, Redirect} from 'react-router-dom';
+import {Route, Switch,} from 'react-router-dom';
 import CustomButton from '../../components/custom-button/custom-button.component';
-import Schedule from '../../components/schedule/schedule-component';
+//import Schedule from '../../components/schedule/schedule-component';
 import ReportsPage from '../reports-page/reports-page';
-import CreateAccount from '../../components/create-account/create-account-component'
+//import CreateAccount from '../../components/create-account/create-account-component'
 import ModifyAccount from '../../components/modify-account/modify-account-component'
 import ModifySchedule from '../../components/modify-schedule/modify-schedule-component'
 import InstanceControl from '../../components/instance-control/instance-control-component'
 import SubjectControl from '../../components/subject-control/subject-control-component'
 import WeightControl from '../../components/weight-control/weight-control-component'
 import LecturerWeightSummary from '../lecturer-weight-summary-page/lecturer-weights-summary-page'
+import LecturerSchedule from '../../components/lecturer-schedule/lecturer-schedule-component'
+import DidaskoLogoImage from '../../images/La-Trobe-Didasko_C_HD.jpg'
 
 import './manager-page-style.scss';
 
 const ManagerPage = ({currentUser}) =>{
     return(
-        <div id='lecturer-page-container' className='homepage'>
-            <div id='navbar-lecturer'>
+        <div className='account-content'>
+            <div id='navbar'>
+            <img id='nav-bar-image' src={DidaskoLogoImage} alt="La-Trobe-Didasko" width='250' height='250'/>
                 <Route render={({ history }) => (
-                <CustomButton onClick={() => { history.push('/')} }>Home</CustomButton>   
+                <CustomButton onClick={() => { history.push('/')} } homeButton={true}>Home</CustomButton>   
                 )} />
                 {/* <Route render={({ history }) => (
                 <CustomButton onClick={() => { history.push('/create-account')} }>Create Account</CustomButton>   
@@ -52,11 +55,11 @@ const ManagerPage = ({currentUser}) =>{
 
             </div>
             {/* <Schedule className="content-lecturer" /> */}
-            <div className="content-lecturer">
+            <div className="content">
                 <Switch>
                     <Route exact path='/' render={() => <div>Home Page Manager</div>} />
                     {/* <Route exact path='/' render={() => <CreateAccount/>} /> */}
-                    <Route exact path='/schedule' render={() => <Schedule currentUser={currentUser} />} />
+                    <Route exact path='/schedule' render={() => <LecturerSchedule currentUser={currentUser} />} />
                     <Route exact path='/report' render={() => <ReportsPage />} /> 
                     {/* <Route exact path='/create-account' render={() => <CreateAccount />} />  */}
                     <Route exact path='/modify-account' render={() => <ModifyAccount />} /> 

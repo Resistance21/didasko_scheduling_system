@@ -995,157 +995,181 @@ class csvExporter extends Component {
       Object.keys(item).map((key, index) => {
         if (key === 'jan' && item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'jan,feb,mar',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
+            supportLecturer: [],
             studentCount: 25,
-            assigned: true
           })
         }else if (key === 'feb'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'feb,mar,apr',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 45,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'mar'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'mar,apr,may',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 200,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'apr'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'apr,may,jun',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 87,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'may'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'may,jun,jul',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 95,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'jun'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'jun,jul,aug',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 60,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'jul'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'jul,aug,sep',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 15,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'aug'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'aug,sep,oct',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 99,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'sep'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'sep,oct,nov',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 49,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'oct'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'oct,nov,dec',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 400,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'nov' && item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'nov,dec,jan',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 10,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else if (key === 'dec'&& item[key] === "X") {
           db = firestore.collection('classes/y2020/classes').doc(`${item.code}-${key.toUpperCase()}`) 
-          batch.update(db, {
+          batch.set(db, {
             classID: `${item.code}-${key.toUpperCase()}`,
             months: 'dec,jan,feb',
-            teacher: 'test teacher',
+            teacher: ['Unassinged'],
+            assigned: false,
+            teacherEmail: '',
             title: `${item.title}`,
             subjectCode: item.code,
             instanceType: 'Standard Instance Delivery',
-            studentCount: 120,
-            assigned: true
+            supportLecturer: [],
+            studentCount: 25,
           })
         }
         else {

@@ -32,7 +32,7 @@ const AdminPage = ({currentUser}) =>{
                 <CustomButton onClick={() => { history.push('/schedule')} }>Schedule</CustomButton>   
                 )} />
                 <Route render={({ history }) => (
-                <CustomButton onClick={() => { history.push('/modify-schedule')} }>Modify Schedule</CustomButton>   
+                <CustomButton onClick={() => { history.push('/modify-schedule')} }>View Schedules</CustomButton>   
                 )} />
                 <Route render={({ history }) => (
                     <CustomButton onClick={() => { history.push('/report')} }>Report</CustomButton>

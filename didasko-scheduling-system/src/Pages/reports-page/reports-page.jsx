@@ -62,8 +62,9 @@ class ReportsPage extends Component {
     hideModalAfterUpdate = async (currentLec, oldLec, oldSupport, newSupport) => {
         
         this.setState({ modalShow: false });
-        this.updateRow(this.state.modalInfo.subjectCode);
-        this.calculateAllWeightsUpdate(currentLec, oldLec, oldSupport, newSupport);
+        await this.updateRow(this.state.modalInfo.subjectCode);
+        //this.calculateAllWeightsUpdate(currentLec, oldLec, oldSupport, newSupport);
+        this.calculateAllWeights();
 
     };
 
@@ -301,20 +302,30 @@ class ReportsPage extends Component {
                     }
                 }             
             })
+
+        
+
             console.log('test teacher', el)
             console.log('weightObj', weightObj)
         })
     }
 
     calculateAllWeights = async () => {
+        const { subjectWeights } = this.state;
+        const assistantIndex = subjectWeights.findIndex((el) => el[0] === 'Support of Academic Assistant');
+        const assistantAmount = subjectWeights[assistantIndex][1].weight;
+        console.log('asistant Amount', assistantAmount);
         const lecturerArray = []
+        const arrayAfterCal = []
+        const batch = firestore.batch();
         await firestore.collection('user').get().then(snapShot => {
             snapShot.forEach(snap => {
-                lecturerArray.push(snap.data().email);
+                lecturerArray.push([snap.data().email, snap.id]);
             })
         })
-        lecturerArray.forEach(el => {          
-            const lect = document.querySelectorAll(`[data-lecturer-email="${el}"]`);
+        lecturerArray.forEach(el => {
+            console.log('lecarracy', el)          
+            const lect = document.querySelectorAll(`[data-lecturer-email="${el[0]}"]`);
             let weightObj = {
                 jan: 0,
                 feb: 0,
@@ -334,96 +345,215 @@ class ReportsPage extends Component {
             lect.forEach(el => {
                 switch (el.id) {
                     case `jan`:
-                        weightObj={
-                            ...weightObj,
-                            jan: weightObj.jan + parseFloat(el.dataset.weightAmount),
-                            feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
-                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                jan: weightObj.jan + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                feb: weightObj.feb + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                mar: weightObj.mar + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                            
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                jan: weightObj.jan + parseFloat(el.dataset.weightAmount),
+                                feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
+                                mar: weightObj.mar + parseFloat(el.dataset.weightAmount)
+                            }
                         }
                         break;
                     case `feb`:
-                        weightObj={
-                            ...weightObj,
-                            feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
-                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
-                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                feb: weightObj.feb + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                mar: weightObj.mar + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                apr: weightObj.apr + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                            }
+                        } else {
+                            
+                            weightObj={
+                                ...weightObj,
+                                feb: weightObj.feb + parseFloat(el.dataset.weightAmount),
+                                mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
+                                apr: weightObj.apr + parseFloat(el.dataset.weightAmount),
+                            }
                         }
                         break;
                     case `mar`:
-                        weightObj={
-                            ...weightObj,
-                            mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
-                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2),
-                            may: weightObj.may + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                mar: weightObj.mar + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                apr: weightObj.apr + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                may: weightObj.may + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                            
+                        } else{
+                            weightObj={
+                                ...weightObj,
+                                mar: weightObj.mar + parseFloat(el.dataset.weightAmount),
+                                apr: weightObj.apr + parseFloat(el.dataset.weightAmount),
+                                may: weightObj.may + parseFloat(el.dataset.weightAmount)
+                            }
+
                         }
                         break;
                     case `apr`:
-                        weightObj={
-                            ...weightObj,
-                            apr: weightObj.apr + this.round(parseFloat(el.dataset.weightAmount), 2), 
-                            may: weightObj.may + parseFloat(el.dataset.weightAmount),
-                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                apr: weightObj.apr + parseFloat(el.dataset.weightAmount) - assistantAmount, 
+                                may: weightObj.may + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                jun: weightObj.jun + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                apr: weightObj.apr + parseFloat(el.dataset.weightAmount), 
+                                may: weightObj.may + parseFloat(el.dataset.weightAmount),
+                                jun: weightObj.jun + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `may`:
-                        weightObj={
-                            ...weightObj,
-                            may: weightObj.may + parseFloat(el.dataset.weightAmount),
-                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
-                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                may: weightObj.may + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                jun: weightObj.jun + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                jul: weightObj.jul + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                may: weightObj.may + parseFloat(el.dataset.weightAmount),
+                                jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
+                                jul: weightObj.jul + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `jun`:
-                        weightObj={
-                            ...weightObj,
-                            jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
-                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
-                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                jun: weightObj.jun + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                jul: weightObj.jul + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                aug: weightObj.aug + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                jun: weightObj.jun + parseFloat(el.dataset.weightAmount),
+                                jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
+                                aug: weightObj.aug + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `jul`:
-                        weightObj={
-                            ...weightObj,
-                            jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
-                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
-                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                jul: weightObj.jul + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                aug: weightObj.aug + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                sep: weightObj.sep + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                jul: weightObj.jul + parseFloat(el.dataset.weightAmount),
+                                aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
+                                sep: weightObj.sep + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `aug`:
-                        weightObj={
-                            ...weightObj,
-                            aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
-                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
-                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                aug: weightObj.aug + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                sep: weightObj.sep + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                oct: weightObj.oct + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                aug: weightObj.aug + parseFloat(el.dataset.weightAmount),
+                                sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
+                                oct: weightObj.oct + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `sep`:
-                        weightObj={
-                            ...weightObj,
-                            sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
-                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
-                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                sep: weightObj.sep + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                oct: weightObj.oct + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                nov: weightObj.nov + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                sep: weightObj.sep + parseFloat(el.dataset.weightAmount),
+                                oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
+                                nov: weightObj.nov + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `oct`:
-                        weightObj={
-                            ...weightObj,
-                            oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
-                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
-                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount)
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                oct: weightObj.oct + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                nov: weightObj.nov + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                dec: weightObj.dec + parseFloat(el.dataset.weightAmount) - assistantAmount
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                oct: weightObj.oct + parseFloat(el.dataset.weightAmount),
+                                nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
+                                dec: weightObj.dec + parseFloat(el.dataset.weightAmount)
+                            }
+                            
                         }
                         break;
                     case `nov`:
-                        weightObj={
-                            ...weightObj,
-                            nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
-                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                nov: weightObj.nov + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                                dec: weightObj.dec + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                            }
+                            
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                nov: weightObj.nov + parseFloat(el.dataset.weightAmount),
+                                dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                            }
+                            
                         }
                         break;
                     case `dec`:
-                        weightObj={
-                            ...weightObj,
-                            dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                        if (el.dataset.supportLecturersAssigned === 'true') {
+                            weightObj={
+                                ...weightObj,
+                                dec: weightObj.dec + parseFloat(el.dataset.weightAmount) - assistantAmount,
+                            }
+                        } else {
+                            weightObj={
+                                ...weightObj,
+                                dec: weightObj.dec + parseFloat(el.dataset.weightAmount),
+                            }
+                            
                         }
                         break;
                     default:{
@@ -431,9 +561,28 @@ class ReportsPage extends Component {
                     }
                 }             
             })
-            console.log('test teacher', el)
-            console.log('weightObj', weightObj)
+            arrayAfterCal.push([el, weightObj]);
+
+            //console.log('test teacher', el)
         })
+        console.log('arraycal', arrayAfterCal)
+
+        arrayAfterCal.forEach(el => {
+            console.log('inside array cal', el)
+            const dbRef = firestore.collection(`user`).doc(el[0][1]);
+            batch.update(dbRef, {
+                weights: el[1]
+            })
+
+        })
+
+        batch.commit().then(
+            this.setState({
+                lecturerWeightSummaryList: []
+            }, () => {
+                this.drawWeightSummary();
+                    
+            }))
     }
 
     drawWeightSummary = async() => {
@@ -455,6 +604,8 @@ class ReportsPage extends Component {
                     return (a.displayName > b.displayName) ? 1 : -1
                 }
             })
+
+            console.log('lectureArracy', lecturerListArray);
 
             lecturerListArray.forEach((item, index) => {
                 weightListArray.push(<LecturerWeightSummaryRow key={item.email} weights={item.weights} firstName={item.firstName} lastName={item.lastName} email={item.email} />)
@@ -481,7 +632,7 @@ class ReportsPage extends Component {
             subjectClasses={currentClassArray} subjectWeights={this.state.subjectWeights} studentCountWeights={this.state.studentCountWeights}
             showModal={this.showModal}/>
         rows[index] = row;
-        this.setState({reportRows: rows});
+        this.setState({ reportRows: rows });
     }
 
     drawReport = async() => {

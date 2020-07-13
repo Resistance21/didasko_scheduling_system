@@ -37,7 +37,7 @@ class LecturerWeightSummaryRow extends Component {
             //console.log(`${key}: ${weights[key]}`);
             if (weights[key] < 3) {
                 console.log("GREEN")
-                node.querySelector(`#${key}`).style.backgroundColor = 'green';
+                node.querySelector(`#${key}`).style.backgroundColor = 'lightgreen';
             } else if (weights[key] < 6) {
                 console.log("ORANGE")
                 node.querySelector(`#${key}`).style.backgroundColor = 'orange';

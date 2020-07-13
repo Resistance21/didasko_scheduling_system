@@ -93,6 +93,7 @@ class InstanceControl extends Component {
                 option.dataset.subjectTitle = el[0][0] 
             subjectAddDropDown.add(option); 
         })
+        subjectAddDropDown.selectedIndex = -1;
 
         const subjectModifyDropDown = document.querySelector('#subjects-picker-modify-dropdown');
         subjectList.forEach((el) => {
@@ -101,7 +102,8 @@ class InstanceControl extends Component {
             option.dataset.subjectId = el[1][0] 
             subjectModifyDropDown.add(option); 
         })
-
+        subjectModifyDropDown.selectedIndex = -1;
+        
         const subjectDeleteDropDown = document.querySelector('#subjects-picker-delete-dropdown');
         subjectList.forEach((el) => {
             const option = (document.createElement("option"));
@@ -109,6 +111,7 @@ class InstanceControl extends Component {
                 option.dataset.subjectId = el[1][0] 
             subjectDeleteDropDown.add(option); 
         })
+        subjectDeleteDropDown.selectedIndex = -1;
         console.log("SUBJECT LIST", subjectList)
     }
 
@@ -285,6 +288,8 @@ class InstanceControl extends Component {
         await firestore.collection('classes/y2020/classes').doc(instanceCode).update({
             instanceType: instanceTypeValue,
             studentCount: studentCountAmount,
+        }).then(alert('Modifying Instance Complete')).catch(error => {
+            alert(error);
         })
 
     }
@@ -317,6 +322,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `FEB`:
@@ -331,6 +338,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `MAR`:
@@ -345,6 +354,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `APR`:
@@ -359,6 +370,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `MAY`:
@@ -373,6 +386,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `JUN`:
@@ -387,6 +402,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `JUL`:
@@ -401,6 +418,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `AUG`:
@@ -415,6 +434,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `SEP`:
@@ -429,6 +450,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `OCT`:
@@ -443,6 +466,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `NOV`:
@@ -457,6 +482,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;
             case `DEC`:
@@ -471,6 +498,8 @@ class InstanceControl extends Component {
                     instanceType: instanceType,
                     supportLecturer: [],
                     studentCount: studentCount,
+                }).then(alert('Adding New Instance Complete')).catch(error => {
+                    alert(error);
                 })
                 break;   
             default:
@@ -526,7 +555,9 @@ class InstanceControl extends Component {
             }
         })
 
-        await firestore.collection(`classes/${year}/classes/`).doc(instanceCode).delete()
+        await firestore.collection(`classes/${year}/classes/`).doc(instanceCode).delete().then(alert('Deleting Instance Complete')).catch(error => {
+            alert(error);
+        })
     }
 
     

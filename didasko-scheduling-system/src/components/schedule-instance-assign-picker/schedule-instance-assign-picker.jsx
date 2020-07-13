@@ -63,12 +63,12 @@ class ScheduleInstanceAssignPicker extends Component {
 
   
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(this.props.schedule) !== JSON.stringify(prevProps.schedule)) {
+        /* if (JSON.stringify(this.props.schedule) !== JSON.stringify(prevProps.schedule)) {
             this.setState({
                 schedule: this.props.schedule,
                 reDraw: true
             })           
-        }
+        } */
 
         if (JSON.stringify(this.props.selectedUserData) !== JSON.stringify(prevProps.selectedUserData)) {
             this.setState({
@@ -83,7 +83,7 @@ class ScheduleInstanceAssignPicker extends Component {
     UNSAFE_componentWillReceiveProps(props) {
         const { refresh} = this.props;
         if (props.refresh !== refresh) {
-            this.colourThreeMonths();
+            this.colourThreeMonthsUpdate();
         }
     }
 
@@ -91,7 +91,7 @@ class ScheduleInstanceAssignPicker extends Component {
     setQualification = async () => {
         const { selectedUserData } = this.state
         
-        await firestore.collection('subjects').doc('subjectList').get().then((snapShot) => {
+        //await firestore.collection('subjects').doc('subjectList').get().then((snapShot) => {
             const dropDown = document.querySelector('#subjects-row-picker-dropdown');
             const qualificationArray = Object.values(selectedUserData.qualifications)
             let DropDownString = [];
@@ -119,9 +119,9 @@ class ScheduleInstanceAssignPicker extends Component {
                 dropDown.add(option);  
             })
 
-        }).catch(function(error) {
+        /* }).catch(function(error) {
             console.log("Error getting documents: ", error);
-        });
+        }); */
     }
     
     
@@ -144,6 +144,8 @@ class ScheduleInstanceAssignPicker extends Component {
                 option.dataset.subjectId = el[1][0] 
                 dropDown.add(option);  
             })
+
+            dropDown.selectedIndex = -1;
 
         }).catch(function(error) {
             console.log("Error getting documents: ", error);
@@ -186,16 +188,338 @@ class ScheduleInstanceAssignPicker extends Component {
             })
         })
 
-        this.colourThreeMonths();
+        this.colourThreeMonthsSetup();
         
     }
 
     
 
-    colourThreeMonths = async() => {
+    colourThreeMonthsSetup = async() => {
         const { schedule, subjectColours, weights, studentCountWeight, weightHolder,selectedUserID, subjectID} = this.state;
         //const node = this.state.node === '' ? ReactDOM.findDOMNode(this) : this.state.node;
         const node = ReactDOM.findDOMNode(this);
+        this.setState({node: node})
+        let bevel = 'inset 2px 2px rgba(255, 255, 255, .4), inset 0px -2px 2px rgba(0, 0, 0, .4)'
+        const scheduleObj = []
+        let classArray = []
+        let scheduleArray=[]
+        const topRows = node.querySelectorAll('.assign-schedule-grid-row');
+        const hideRows = node.querySelectorAll('.three-row');
+        topRows.forEach(item => {
+            item.childNodes.forEach((i) => {
+                i.style.height = '10px';
+                i.style.backgroundColor = '';
+                i.style.boxShadow = '';
+                i.removeAttribute("data-id");
+                i.classList.remove('has-class');
+                i.dataset.hasclass = "false";
+                i.innerText = ''
+                
+            })
+        })
+
+        /* await firestore.collection('classes/y2020/classes').where("subjectCode", '==', subjectID).get().then(snapShot => {              
+                snapShot.forEach(snap => {
+                    classArray.push(snap.data());
+                })
+                
+            }) */
+   
+        /* classArray.forEach((item, index) => {
+
+            const instanceInfo = classArray.filter(el => el.classID === item.classID)
+
+                let instanceWeightAmount = 0;
+                let studentCountWeightAmount = 0;
+                let totalWeightAmount = 0;
+                const studentCountWeightArray = studentCountWeight;
+                let studentCountMet = false;
+                studentCountWeightArray.sort((a, b) => a[2] - b[2])
+
+                weights.forEach(el => {
+                    if (instanceInfo[0].instanceType === el[0].toString()) {
+                        instanceWeightAmount = el[1];
+                    }
+                })
+
+                studentCountWeightArray.forEach((el, index) => {
+                    if (instanceInfo[0].studentCount < el[2] && studentCountMet === false) {
+                        studentCountWeightAmount = el[1];
+                        studentCountMet = true;
+                    }
+
+                    if (instanceInfo[0].studentCount >= studentCountWeightArray[studentCountWeightArray.length - 1][2]
+                        && studentCountMet === false) {
+                            studentCountWeightAmount = studentCountWeightArray[studentCountWeightArray.length - 1][1];
+                            studentCountMet = true;
+                        }
+
+                })
+            
+            totalWeightAmount = instanceWeightAmount[0] + studentCountWeightAmount[0]
+            let subjectMonthsArray = []//instanceInfo[0].months.split(",", 3);
+            if (instanceInfo[0].months.startsWith("dec")) {
+                subjectMonthsArray.push(instanceInfo[0].months.split(",", 1))
+            } else if (instanceInfo[0].months.startsWith("nov")) {
+                subjectMonthsArray.push(instanceInfo[0].months.split(",", 2))
+            } else {
+                subjectMonthsArray.push(instanceInfo[0].months.split(",", 3))
+            }
+            let monthCheck = ['', '', ''];
+            
+            subjectMonthsArray.forEach((el) => {
+                el.forEach((month, index) => {
+                                
+                    let currentMonth = node.querySelector(`#${month}`)
+                    let currentMonthChildren = currentMonth.childNodes;
+                    currentMonthChildren.forEach((child, index) => {
+                        let arrayStore = monthCheck[index];
+                        arrayStore += child.dataset.hasclass;
+                        monthCheck[index] = arrayStore;
+                        
+                    }) 
+                            })
+            
+                        })      
+            
+                        if (monthCheck[0] === 'falsefalsefalse'){
+                            const rowNum = 1
+                            const rowOne = node.querySelectorAll('.row-one');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                            subjectMonthsArray[0].forEach((months, i) => {
+                                const div = node.querySelector(`#${months}-${rowNum}`)
+                                div.dataset.id = instanceInfo[0].classID;
+                                div.dataset.weightAmount = totalWeightAmount;
+                                div.style.backgroundColor = subjectColours[index];
+                                //div.style.boxShadow = bevel;
+                                if (i === 0) {                                  
+                                    div.innerText = instanceInfo[0].classID
+                                }
+                                if (i === 1) {
+                                    if (instanceInfo[0].assigned === true) {
+                                        div.innerText = `${instanceInfo[0].teacher[0]} ${instanceInfo[0].teacher[1]}`
+                                        
+                                    } else {
+                                        div.innerText = `${instanceInfo[0].teacher[0]}` 
+                                    }
+                                }
+                                div.classList.add('has-class');
+                                div.dataset.hasclass = "true";
+                            })
+                            
+                        } else if (monthCheck[1] === 'falsefalsefalse') {
+                            const rowNum = 2
+                            const rowOne = node.querySelectorAll('.row-two');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                            subjectMonthsArray[0].forEach((months, i) => {
+                                //console.log('months array', months)
+                                const div = node.querySelector(`#${months}-${rowNum}`)
+                                //console.log('index inner2', index)
+                                div.dataset.id = instanceInfo[0].classID;
+                                div.dataset.weightAmount = totalWeightAmount;
+                                div.style.backgroundColor = subjectColours[index];
+                                //div.style.boxShadow = bevel;
+                                div.classList.add('has-class');
+                                div.dataset.hasclass = "true";
+                                if (i === 0) {                                  
+                                    div.innerText = instanceInfo[0].classID
+                                }
+                                if (i === 1) {
+                                    if (instanceInfo[0].assigned === true) {
+                                        div.innerText = `${instanceInfo[0].teacher[0]} ${instanceInfo[0].teacher[1]}`
+                                        
+                                    } else {
+                                        div.innerText = `${instanceInfo[0].teacher[0]}` 
+                                    }
+                                }
+                            })
+                            
+                        } else if (monthCheck[2] === 'falsefalsefalse') {
+                            const rowNum = 3
+                            const rowOne = node.querySelectorAll('.row-three');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                            subjectMonthsArray[0].forEach((months, i) => {
+                                //console.log('months array', months)
+                                //console.log('index inner3', index)
+                                
+                                const div = node.querySelector(`#${months}-${rowNum}`)
+                                div.dataset.id = instanceInfo[0].classID;
+                                div.dataset.weightAmount = totalWeightAmount;
+                                div.style.backgroundColor = subjectColours[index];
+                                
+                                //div.style.boxShadow = bevel;
+                                div.classList.add('has-class');
+                                div.dataset.hasclass = "true";
+                                if (i === 0) {                                  
+                                    div.innerText = instanceInfo[0].classID
+                                }
+                                if (i === 1) {
+                                    if (instanceInfo[0].assigned === true) {
+                                        div.innerText = `${instanceInfo[0].teacher[0]} ${instanceInfo[0].teacher[1]}`
+                                        
+                                    } else {
+                                        div.innerText = `${instanceInfo[0].teacher[0]}` 
+                                    }
+                                }
+                            })
+                            
+                        }
+            
+                        if (subjectMonthsArray.toString() === 'nov,dec') {
+                            if (monthCheck[0] === 'falsefalse') {
+                                const rowNum = 1
+                                const rowOne = node.querySelectorAll('.row-one');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                                subjectMonthsArray[0].forEach((months, i) => {
+                                    //console.log('months array', months)
+                                    const div = node.querySelector(`#${months}-${rowNum}`)
+                                    div.dataset.id = instanceInfo[0].classID;
+                                    div.dataset.weightAmount = totalWeightAmount;
+                                    div.style.backgroundColor = subjectColours[index];
+                                    //div.style.boxShadow = bevel;
+                                    div.classList.add('has-class');
+                                    div.dataset.hasclass = "true";
+                                    if (i === 0) {                                  
+                                        div.innerText = instanceInfo[0].classID
+                                    }
+                                    if (i === 1) {
+                                        if (instanceInfo[0].assigned === true) {
+                                            div.innerText = `${instanceInfo[0].teacher[0]} ${instanceInfo[0].teacher[1]}`
+                                            
+                                        } else {
+                                            div.innerText = `${instanceInfo[0].teacher[0]}` 
+                                        }
+                                    }
+                                })
+                            }
+                            else if (monthCheck[1] === 'falsefalse') {
+                                const rowNum = 2
+                                const rowOne = node.querySelectorAll('.row-two');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                                subjectMonthsArray[0].forEach((months, i) => {
+                                    //console.log('months array', months)
+            
+                                    const div = node.querySelector(`#${months}-${rowNum}`)
+                                    div.dataset.id = instanceInfo[0].classID;
+                                    div.dataset.weightAmount = totalWeightAmount;
+                                    div.style.backgroundColor = subjectColours[index];
+                                    //div.style.boxShadow = bevel;
+                                    div.classList.add('has-class');
+                                    div.dataset.hasclass = "true";
+                                    if (i === 0) {                                  
+                                        div.innerText = instanceInfo[0].classID
+                                    }
+                                    if (i === 1) {
+                                        if (instanceInfo[0].assigned === true) {
+                                            div.innerText = `${instanceInfo[0].teacher[0]} ${instanceInfo[0].teacher[1]}`
+                                            
+                                        } else {
+                                            div.innerText = `${instanceInfo[0].teacher[0]}` 
+                                        }
+                                    }
+                                })
+                            } else if (monthCheck[2] === 'falsefalse') {
+                                const rowNum = 3
+                                const rowOne = node.querySelectorAll('.row-three');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                                subjectMonthsArray[0].forEach((months, i) => {
+                                    //console.log('months array', months)
+                                    const div = node.querySelector(`#${months}-${rowNum}`)
+                                    div.dataset.id = instanceInfo[0].classID;
+                                    div.dataset.weightAmount = totalWeightAmount;
+                                    div.style.backgroundColor = subjectColours[index];
+                                    //div.style.boxShadow = bevel;
+                                    div.classList.add('has-class');
+                                    div.dataset.hasclass = "true";
+                                    if (i === 0) {                                  
+                                        div.innerText = instanceInfo[0].classID
+                                    }
+                                    if (i === 1) {
+                                        if (instanceInfo[0].assigned === true) {
+                                            div.innerText = `${instanceInfo[0].teacher[0]} ${instanceInfo[0].teacher[1]}`
+                                            
+                                        } else {
+                                            div.innerText = `${instanceInfo[0].teacher[0]}` 
+                                        }
+                                    }
+                                })
+                            }
+                        }
+            
+                        if (subjectMonthsArray.toString() === 'dec') {
+                            if (monthCheck[0] === 'false') {
+                                const rowNum = 1
+                                const rowOne = node.querySelectorAll('.row-one');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                                const div = node.querySelector(`#dec-${rowNum}`)
+                                div.setAttribute("data-id", instanceInfo[0].classID)
+                                div.dataset.weightAmount = totalWeightAmount;
+                                //div.dataset.id = item.id;
+                                div.style.backgroundColor = subjectColours[index];
+                                //div.style.boxShadow = bevel;
+                                div.classList.add('has-class');
+                                div.dataset.hasclass = "true";                                 
+                                div.innerText = instanceInfo[0].classID
+
+                                
+                            }
+                            else if (monthCheck[1] === 'false') {
+                                const rowNum = 2
+                                const rowOne = node.querySelectorAll('.row-two');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                                const div = node.querySelector(`#dec-${rowNum}`)
+                                div.dataset.id = instanceInfo[0].classID;
+                                div.dataset.weightAmount = totalWeightAmount;
+                                div.style.backgroundColor = subjectColours[index];
+                                //div.style.boxShadow = bevel;
+                                div.classList.add('has-class');
+                                div.dataset.hasclass = "true";
+                                div.innerText = instanceInfo[0].classID
+                            } else if (monthCheck[2] === 'false') {
+                                const rowNum = 3
+                                const rowOne = node.querySelectorAll('.row-three');
+                            rowOne.forEach(el => {
+                                el.style.height = '20px';
+                            })
+                                const div = node.querySelector(`#dec-${rowNum}`)
+                                div.dataset.id = instanceInfo[0].classID;
+                                div.dataset.weightAmount = totalWeightAmount;
+                                div.style.backgroundColor = subjectColours[index];
+                                //div.style.boxShadow = bevel;
+                                div.classList.add('has-class');
+                                div.dataset.hasclass = "true";
+                                div.innerText = instanceInfo[0].classID
+                            }
+                }
+            }) */
+            //this.calculateWeights(node);
+            this.setState({reDraw: false}) 
+        //this.calculateWeights();
+        
+    }
+
+    colourThreeMonthsUpdate = async() => {
+        const { schedule, subjectColours, weights, studentCountWeight, weightHolder,selectedUserID,} = this.state;
+        //const node = this.state.node === '' ? ReactDOM.findDOMNode(this) : this.state.node;
+        const node = ReactDOM.findDOMNode(this);
+        const subjectDropDown = document.querySelector('#subjects-row-picker-dropdown');
+        const subjectID = subjectDropDown[subjectDropDown.selectedIndex].dataset.subjectId;
         this.setState({node: node})
         let bevel = 'inset 2px 2px rgba(255, 255, 255, .4), inset 0px -2px 2px rgba(0, 0, 0, .4)'
         const scheduleObj = []
@@ -934,9 +1258,10 @@ class ScheduleInstanceAssignPicker extends Component {
         this.setState({
             subjectID: subjectID,
             subjectName: dropDownValue
+        }, () => {
+            this.colourThreeMonthsUpdate();           
         })
 
-        this.colourThreeMonths();
 
     }
 

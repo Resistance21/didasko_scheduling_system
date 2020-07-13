@@ -6,11 +6,9 @@ import './sign-in-page-style.scss';
 
 const SignInPage = () =>{
     return (
-        <div id='sign-in-page-container' className='homepage'>
+        <div className='sign-in-page-container'>
             <div className='image grid-square'>
-                
-                <img src={DidaskoLogo} alt="La-Trobe-Didasko" width='250' height='250' />
-                
+                <img src={DidaskoLogo} alt="La-Trobe-Didasko" width='250' height='250' />   
             </div>
             <div className='grid-square'>
                 <SignIn/>

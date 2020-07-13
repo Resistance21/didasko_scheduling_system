@@ -53,3 +53,22 @@
     flex-direction: column;
     width: 25%
 }
+.instance-modify-modal{
+  select{
+    margin-bottom: 5px;
+  }
+  label{
+    margin-bottom: 5px;
+  }
+  input{
+    margin-bottom: 10px;
+  }
+  .custom-button{
+    margin: auto;
+    margin-bottom: 10px;
+    background-color: #004a80;
+    color: #ffffff;
+    width: 40%
+  }
+
+}

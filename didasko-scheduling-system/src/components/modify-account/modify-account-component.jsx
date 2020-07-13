@@ -44,13 +44,13 @@ class ModifyAccount extends Component{
             }
         }
 
-        const { displayName, email, password, confirmPassword,} = this.state;
+        /* const { displayName, email, password, confirmPassword,} = this.state;
         if (password !== confirmPassword) {
             alert("password do not match");
             return;
-        }
+        } */
 
-        try {
+        /* try {
             await auth.createUserWithEmailAndPassword(email, password);
             const user = auth.currentUser;
             //console.log(" Displayname :" + displayName + " checked Account :" + checkedAccountType + " Checksubjecy: " + checkedSubjects)
@@ -66,7 +66,7 @@ class ModifyAccount extends Component{
         }
         catch(error){
             console.error(error)
-        }
+        } */
 
     }
 
@@ -87,7 +87,7 @@ class ModifyAccount extends Component{
                 option.dataset.userId = el[1];
                 dropDown.add(option); 
             })
-
+            dropDown.selectedIndex = -1;
         })
 
         firestore.collection('subjects').doc('subjectList').get().then((snapShot) => {
@@ -122,8 +122,8 @@ class ModifyAccount extends Component{
 
     onDropDownChange = async() => {
         const dropDown = document.querySelector('#modify-account-dropdown');
-        const nameInputField = document.querySelector('#modify-name-input');
-        const emailInputField = document.querySelector('#modify-email-input');
+        const firstNameInputField = document.querySelector('#modify-first-name-input');
+        const lastNameInputField = document.querySelector('#modify-last-name-input');
         const allCheckBoxes = document.querySelectorAll('input[type=checkbox]');
         allCheckBoxes.forEach(el => {
             el.checked = false;
@@ -133,14 +133,14 @@ class ModifyAccount extends Component{
         await firestore.collection('user').where('email', '==', dropDownValue).get().then(snapShot => {
 
             for(let doc of snapShot.docs) {
-                const radioInput = document.querySelector(`#modify-account-radio-${doc.data().accountType}`);
-                nameInputField.value = doc.data().displayName;
-                emailInputField.value = doc.data().email;
                 console.log(doc.id, " => ", doc.data())
+                const radioInput = document.querySelector(`#modify-account-radio-${doc.data().accountType}`);
+                firstNameInputField.value = doc.data().firstName;
+                lastNameInputField.value = doc.data().lastName;
                 radioInput.checked = true;
 
 
-                if (doc.data().qualifications !=  null || doc.data().qualifications != undefined ) {
+                if (doc.data().qualifications !=  null || doc.data().qualifications !== undefined ) {
                     for (var key of Object.keys(doc.data().qualifications)) {
                         const checkbox = document.querySelector(`[data-subject-code="${key}"]`);
                         checkbox.checked = true;
@@ -162,7 +162,18 @@ class ModifyAccount extends Component{
         const batch = firestore.batch();
         const checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
         const unCheckBoxes = document.querySelectorAll('input[type=checkbox]:not(:checked)');
+        const firstName = document.querySelector('#modify-first-name-input');
+        const lastName = document.querySelector('#modify-last-name-input')
         const dbRef = firestore.collection(`user/${selectedUserID}/qualifications`);
+        let checkedAccountType = '';
+        const checkRadio = document.getElementsByName("accountType");
+        
+        for (var j = 0; j < checkRadio.length; j++) {
+            if (checkRadio[j].checked) {
+                checkedAccountType = checkRadio[j].value;
+            }
+        }
+
         console.log('checkboxes', checkboxes)
         let checkBoxOBJ = {}
 
@@ -176,7 +187,12 @@ class ModifyAccount extends Component{
         console.log('obj', checkBoxOBJ)
 
         await firestore.collection('user').doc(selectedUserID).update({
-            qualifications: checkBoxOBJ
+            firstName: firstName.value,
+            lastName: lastName.value,
+            qualifications: checkBoxOBJ,
+            accountType: checkedAccountType 
+        }).then(alert('Modification Complete')).catch(error => {
+            alert(error)
         })       
 
     }
@@ -193,16 +209,10 @@ class ModifyAccount extends Component{
                 <select name='subjects' id='modify-account-dropdown' onChange={this.onDropDownChange} ></select>
                 <form>
                     <div>First Name:</div>
-                    <input id='modify-name-input' className='form-input' type='text' name='displayName' label='' required />
+                    <input id='modify-first-name-input' className='form-input' type='text' label='' required />
                     <div>Last Name:</div>
-                    <input id='modify-email-input' className='form-input' type='email' name='email' label='' required />
+                    <input id='modify-last-name-input' className='form-input' type='text'  label='' required />
                     
-                    <h2>Account Qualifications: </h2>
-                    <div id='subject-list'>
-
-                    </div>
-
-
                     <h2>Account Level:</h2>
                     <div id='account-type-grid-holder'>
                     <label>Admin</label>
@@ -216,6 +226,13 @@ class ModifyAccount extends Component{
                         value={"lecturer"} label='Lecturer' required />
 
                     </div>
+
+                    <h2>Account Qualifications: </h2>
+                    <div id='subject-list'>
+
+                    </div>
+
+
                     <div className="button-wrapper">
                         <CustomButton type='button' onClick={this.modifyAccount} >Modify Account</CustomButton>
 

@@ -39,7 +39,7 @@ class SignIn extends Component {
     
     render() {
         return (
-            <div className='sign-in'>
+            <div className='sign-in-container'>
                 <span className='login-text'>Sign in with your email and password</span>
                 <form onSubmit={this.handleSubmit}>
                     <FormInput name='email' type='email' value={this.state.email} handleChange={this.handleChange} label='email' required />

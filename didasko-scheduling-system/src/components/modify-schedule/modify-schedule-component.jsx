@@ -57,8 +57,8 @@ class ModifySchedule extends Component {
         
     }
 
-    componentDidMount() {
-        firestore.collection('user').get().then((snapShot) => {
+    componentDidMount = async() => {
+        await firestore.collection('user').get().then((snapShot) => {
             const dropDown = document.querySelector('#modify-schedule-dropdown');
             let DropDownString = [];
             snapShot.forEach(doc => {
@@ -72,6 +72,7 @@ class ModifySchedule extends Component {
                 dropDown.add(option); 
             })
 
+            dropDown.selectedIndex = -1;
         })
 
     }
@@ -114,6 +115,7 @@ class ModifySchedule extends Component {
         const { schedules, selectedUserID } = this.state;
         let scheduleSubjectArray = [];
         let subjectRows = [];
+
         this.setState({
             scheduleRows: [],
             //reRenderPicker:true
@@ -194,6 +196,7 @@ class ModifySchedule extends Component {
     }
 
     addNewClass = async (event) => {
+        const year ='y2020'
         const { selectedUserID, selectedUserData } = this.state
         const dropDown = document.querySelector('#subjects-picker-dropdown');
         const dropDownClass = document.querySelector('#subjects-class-picker-dropdown');
@@ -207,7 +210,7 @@ class ModifySchedule extends Component {
         let count = 1;
 
 
-        const instance = await firestore.collection('classes/y2020/classes').where('classID', '==', `${classID}`).get().then(async (snapShot) => {
+        const instance = await firestore.collection(`classes/${year}/classes`).where('classID', '==', `${classID}`).get().then(async (snapShot) => {
             let instanceData
             let oldUserID
             snapShot.forEach(doc => {
@@ -216,11 +219,11 @@ class ModifySchedule extends Component {
             return instanceData
         })
 
-        const oldUserID = await firestore.collection('user').where('email', '==', instance.teacher).get().then(async snapShot => {
+        const oldUserID = await firestore.collection('user').where('email', '==', instance.teacherEmail).get().then(async snapShot => {
             let oldUserID
             for(const snap of snapShot.docs){
                 oldUserID = snap.id
-                await firestore.collection(`user/${snap.id}/schedules/y2020/subjects/${instance.subjectCode}/instances`)
+                await firestore.collection(`user/${snap.id}/schedules/${year}/subjects/${instance.subjectCode}/instances`)
                     .doc(instance.classID).delete()
             }
             return oldUserID
@@ -395,6 +398,19 @@ class ModifySchedule extends Component {
             })
         })
         console.log('weight holder schedule function', this.state.monthWeights)
+        const colourCheck = Object.entries(this.state.monthWeights);
+        colourCheck.forEach(el => {
+            const monthDiv = document.querySelector(`#weight-${el[0]}`);
+            if (el[1] < 3) {
+                monthDiv.style.backgroundColor = 'lightgreen';
+            } else if (el[1] < 6) {
+                monthDiv.style.backgroundColor = 'orange';
+            } else {
+                monthDiv.style.backgroundColor = 'red';
+            }
+        })
+            console.log('months weight', colourCheck)
+        
     }
 
     printState = () => {
@@ -494,31 +510,31 @@ class ModifySchedule extends Component {
                     </div>
                     <div className="schedule-header">
                         {/* <div className="schedule-header-item"></div> */}
-                        <div className="schedule-header-item"><span>{monthWeights.jan.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.feb.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.mar.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.apr.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.may.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.jun.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.jul.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.aug.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.sep.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.oct.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.nov.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.dec.toFixed(2)}</span> </div>
+                        <div id='weight-jan' className="schedule-header-item"><span>{monthWeights.jan.toFixed(2)}</span> </div>
+                        <div id='weight-feb' className="schedule-header-item"><span>{monthWeights.feb.toFixed(2)}</span> </div>
+                        <div id='weight-mar' className="schedule-header-item"><span>{monthWeights.mar.toFixed(2)}</span> </div>
+                        <div id='weight-apr' className="schedule-header-item"><span>{monthWeights.apr.toFixed(2)}</span> </div>
+                        <div id='weight-may' className="schedule-header-item"><span>{monthWeights.may.toFixed(2)}</span> </div>
+                        <div id='weight-jun' className="schedule-header-item"><span>{monthWeights.jun.toFixed(2)}</span> </div>
+                        <div id='weight-jul' className="schedule-header-item"><span>{monthWeights.jul.toFixed(2)}</span> </div>
+                        <div id='weight-aug' className="schedule-header-item"><span>{monthWeights.aug.toFixed(2)}</span> </div>
+                        <div id='weight-sep' className="schedule-header-item"><span>{monthWeights.sep.toFixed(2)}</span> </div>
+                        <div id='weight-oct' className="schedule-header-item"><span>{monthWeights.oct.toFixed(2)}</span> </div>
+                        <div id='weight-nov' className="schedule-header-item"><span>{monthWeights.nov.toFixed(2)}</span> </div>
+                        <div id='weight-dec' className="schedule-header-item"><span>{monthWeights.dec.toFixed(2)}</span> </div>
                     </div>
                 </div>
                 <div className="schedule-container">
    
                     {/* <ScheduleRowPicker /> */}
                     {/* {this.state.reRenderPicker ? <div> L O A D I N G </div> : <ScheduleInstanceAssignPicker />} */}
-                    <ScheduleInstanceAssignPicker refresh={this.state.refreshPicker} selectedUserData={selectedUserData} />
+                    {/* <ScheduleInstanceAssignPicker refresh={this.state.refreshPicker} selectedUserData={selectedUserData} /> */}
 
                     
-                    <CustomButton onClick={this.addNewClass}>Add new Instance</CustomButton>
-                    <CustomButton onClick={this.deleteClass}>Delete instance</CustomButton>
-                    <CustomButton onClick={this.printState}>refresh</CustomButton>
-                    <CustomButton onClick={this.refreshPicker}>Change display</CustomButton>
+                    {/* <CustomButton onClick={this.addNewClass}>Add new Instance</CustomButton> */}
+                    {/* <CustomButton onClick={this.deleteClass}>Delete instance</CustomButton> */}
+                    {/* <CustomButton onClick={this.printState}>refresh</CustomButton> */}
+                    {/* <CustomButton onClick={this.refreshPicker}>Change display</CustomButton> */}
 
                 </div>
             </div>

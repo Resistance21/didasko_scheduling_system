@@ -33,7 +33,7 @@ const ManagerPage = ({currentUser}) =>{
                 <CustomButton onClick={() => { history.push('/schedule')} }>Schedule</CustomButton>   
                 )} />
                 <Route render={({ history }) => (
-                <CustomButton onClick={() => { history.push('/modify-schedule')} }>Modify Schedule</CustomButton>   
+                <CustomButton onClick={() => { history.push('/modify-schedule')} }>View Schedules</CustomButton>   
                 )} />
                 <Route render={({ history }) => (
                     <CustomButton onClick={() => { history.push('/report')} }>Report</CustomButton>
@@ -47,9 +47,9 @@ const ManagerPage = ({currentUser}) =>{
                 <Route render={({ history }) => (
                     <CustomButton onClick={() => { history.push('/weight-control')} }>Weight Control</CustomButton>
                 )} />
-                <Route render={({ history }) => (
+                {/* <Route render={({ history }) => (
                     <CustomButton onClick={() => { history.push('/weight-summary')} }>Weight summary</CustomButton>
-                )} />
+                )} /> */}
                     
 
 
@@ -67,7 +67,7 @@ const ManagerPage = ({currentUser}) =>{
                     <Route exact path='/instance-control' render={() => <InstanceControl currentUser={currentUser} />} /> 
                     <Route exact path='/subject-control' render={() => <SubjectControl currentUser={currentUser} />} /> 
                     <Route exact path='/weight-control' render={() => <WeightControl currentUser={currentUser} />} /> 
-                    <Route exact path='/weight-summary' render={() => <LecturerWeightSummary currentUser={currentUser} />} /> 
+                    {/* <Route exact path='/weight-summary' render={() => <LecturerWeightSummary currentUser={currentUser} />} />  */}
                 </Switch>
 
 

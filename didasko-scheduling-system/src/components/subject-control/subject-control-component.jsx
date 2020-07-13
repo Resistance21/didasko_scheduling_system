@@ -46,6 +46,7 @@ class SubjectControl extends Component {
             option.dataset.subjectId = el[1][0] 
             subjectModifyDropDown.add(option); 
         })
+        subjectModifyDropDown.selectedIndex = -1;
 
         const subjectDeleteDropDown = document.querySelector('#subject-picker-delete-dropdown');
         subjectList.forEach((el) => {
@@ -54,6 +55,7 @@ class SubjectControl extends Component {
                 option.dataset.subjectId = el[1][0] 
             subjectDeleteDropDown.add(option); 
         })
+        subjectDeleteDropDown.selectedIndex = -1;
     }
 
     onDropDownChange = async(event) => {
@@ -94,7 +96,9 @@ class SubjectControl extends Component {
                 code: subjectCodeInput.value,
                 title:subjectNameInput.value               
             }
-        })
+        }).then(alert("Creating New Subject Complete")).catch(error => {
+            alert(error);
+        });
     }
 
     modifySubject = async (event) => {
@@ -115,7 +119,7 @@ class SubjectControl extends Component {
                 return tempArray;
             })
         
-        const batch = firestore.batch();
+        const firstBatch = firestore.batch();
         oldInstances.forEach(el => {
             const month = el[0].split('-')[1]
             const tempObj = {
@@ -132,20 +136,24 @@ class SubjectControl extends Component {
             }
             console.log('old months', month);
             const ref = firestoreRef.doc(`${subjectCodeNew.value}-${month}`);
-            batch.set(ref, {
+            firstBatch.set(ref, {
                 ...tempObj
             })
 
-            batch.delete(firestoreRef.doc(el[0]));
+            firstBatch.delete(firestoreRef.doc(el[0]));
         })
+
+        console.log("old instance", oldInstances)
+
+
 
         const subjectListRef = firestore.collection('subjects').doc('subjectList');
 
-        batch.update(subjectListRef,{
+        firstBatch.update(subjectListRef,{
             [modifySubjectOldCodeInput.value]: firestoreTwo.FieldValue.delete()
         })
 
-        batch.update(subjectListRef, {
+        firstBatch.update(subjectListRef, {
             [subjectCodeNew.value]: {
                 code: subjectCodeNew.value,
                 title:modifySubjectInput.value               
@@ -154,7 +162,68 @@ class SubjectControl extends Component {
 
 
 
-        batch.commit().then('Batch Done')
+        firstBatch.commit().then(console.log('Batch Done'));
+
+        const secondBatch = firestore.batch();
+        let index = 1
+        for (const el of oldInstances) {
+
+            const month = el[0].split('-')[1]
+            if (el[1].assigned) {
+                const lecEmail = el[1].teacherEmail;
+                const userID = await firestore.collection('user').where('email', '==', lecEmail).get().then(snapShot => {
+                    let tempId =''
+                    snapShot.forEach(snap => {
+                        tempId = snap.id
+                        
+                    })
+                    return tempId;
+                })
+                if (index === 1) {
+                    const usersAccountWithQual = await firestore.collection('user').get().then(snapShot => {
+                        const tempArray = [];
+                        snapShot.forEach(snap => {
+                            console.log(snap.data());
+                            if (snap.data().qualifications.hasOwnProperty(`${el[1].subjectCode}`)) {
+                                tempArray.push([snap.data(), snap.id]);
+                            }
+                        })
+                        return tempArray;
+                    })
+
+                    console.log('qual array', usersAccountWithQual);
+                    usersAccountWithQual.forEach(i => {
+                        console.log('item', i)
+                        let qualificationsObj = i[0].qualifications;
+                        console.log("qualifications old", qualificationsObj)
+                        delete qualificationsObj[el[1].subjectCode];
+                        qualificationsObj = {
+                            ...qualificationsObj,
+                            [subjectCodeNew.value]: [subjectCodeNew.value, el[1].title]
+                        }
+                        const dbRef = firestore.collection(`user`).doc(i[1])
+                        secondBatch.update(dbRef, ({
+                            qualifications: qualificationsObj
+                        }))
+                        console.log("qul new", qualificationsObj)
+                        
+                    })
+                    
+                }
+                await firestore.collection(`user/${userID}/schedules/${year}/subjects/`).doc(`${subjectCodeNew.value}`).set({});
+                await firestore.collection(`user/${userID}/schedules/${year}/subjects/`).doc(`${el[1].subjectCode}`).delete();
+                const instanceRef = firestore.collection(`user/${userID}/schedules/${year}/subjects/${el[1].subjectCode}/instances/`).doc(`${el[1].classID}`);
+                const newInstanceRef = firestore.collection(`user/${userID}/schedules/${year}/subjects/${subjectCodeNew.value}/instances/`)
+                    .doc(`${subjectCodeNew.value}-${month}`);
+                secondBatch.delete(instanceRef);
+                secondBatch.set(newInstanceRef, {});
+                
+            } 
+            index += 1;
+        }
+        secondBatch.commit().then(alert("Modifying Subject Complete")).catch(error => {
+            alert(error);
+        });
 
         console.log('old instances', oldInstances);
     }
@@ -188,7 +257,9 @@ class SubjectControl extends Component {
             [subjectCode]: firestoreTwo.FieldValue.delete()
         })
 
-        batch.commit().then(console.log('batch done'))
+        batch.commit().then(alert("Deleting Subject Complete")).catch(error => {
+            alert(error);
+        });
 
     }
     

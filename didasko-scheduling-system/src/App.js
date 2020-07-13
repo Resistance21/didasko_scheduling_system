@@ -40,30 +40,66 @@ class App extends Component {
   componentDidMount() {
 
     auth.onAuthStateChanged( async user => {
-      
+      console.log(user)
       if (user) {
-              firestore.collection('user').doc(user.uid).get().then((doc) => {
-                this.setState({
+        firestore.collection('user').doc(user.uid).get().then(async (doc) => {
+          console.log('DOC', doc)
+          if (!doc.exists) {
+            const accountype = 'lecturer'
+            const needsUpdate = 'needs updating'
+            const createdAt = new Date();
+            await firestore.collection('user').doc(user.uid).set({
+              accountType: accountype,
+              createdAt: createdAt,
+              email: user.email,
+              firstName: needsUpdate,
+              lastName: needsUpdate,
+              qualifications: {},
+              weights: {
+                apr: 0,
+                aug: 0,
+                dec: 0,
+                feb: 0,
+                jan: 0,
+                jul: 0,
+                jun: 0,
+                mar: 0,
+                may: 0,
+                nov: 0,
+                oct: 0,
+                sep: 0
+              }
+            }).then(
+              this.setState({
+                uid: user.uid,
+                email: user.email,
+                accountType: accountype,
+                currentUser: {
                   uid: user.uid,
                   email: user.email,
-                  displayName: doc.data().displayName,
-                  accountType: doc.data().accountType,
-                  currentUser: {
-                    uid: user.uid,
-                    email: doc.data().email,
-                    displayName: doc.data().displayName,
-                    accountType: doc.data().accountType,
-                    schedules: doc.data().schedules,
-                    subjects: doc.data().subjects
-                  },
-                })
-                console.log('IN CURENT USER', this.state)
-                this.setState({fetching: false})
+                  accountType: accountype,
+                },
               })
-          }else {
-          // No user is signed in.
-          this.setState({fetching: false})
+            )
+          }else{
+            this.setState({
+              uid: user.uid,
+              email: user.email,
+              accountType: doc.data().accountType,
+              currentUser: {
+                uid: user.uid,
+                email: doc.data().email,
+                accountType: doc.data().accountType,
+              },
+            })
           }
+          console.log('IN CURENT USER', this.state)
+          this.setState({fetching: false})
+        })
+      }else {
+          // No user is signed in.
+        this.setState({fetching: false})
+      }
     })
   }
 
@@ -97,17 +133,17 @@ class App extends Component {
     return (
       <div className="app-div">
           <div id='main-grid'>
-          <div className='header'>header
+          <div className='header'>
             <CustomButton onClick={this.logOut}>LOG OUT</CustomButton>
             </div>
-            <CSVUpload />
+            {/* <CSVUpload /> */}
             {/* <div className='content-signout'> */}
             {/* <Route render={({ history }) => (<CustomButton onClick={() => { history.push('/'); this.logOut()} }>Logout</CustomButton>   )} /> */}
             {this.state.currentUser.accountType === "admin" ? <AdminPage className="lecturer-page" currentUser={this.state.currentUser} />: null}
             {this.state.currentUser.accountType === "manager" ? <ManagerPage className="lecturer-page" currentUser={this.state.currentUser} /> : null}
             {this.state.currentUser.accountType === "lecturer" ? <LecturerPage className="lecturer-page" currentUser={this.state.currentUser} />: null}
-            {this.state.currentUser.accountType === "" ? <div className='content'> <SignInPage /></div> : null}
-            <div className='footer'>TEST</div>
+            {this.state.currentUser.accountType === "" ? <SignInPage /> : null}
+            <div className='footer'></div>
         {/* </div> */}
         </div>
       </div>

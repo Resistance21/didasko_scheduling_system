@@ -253,12 +253,12 @@ class ScheduleRowSubject extends Component {
                 })
 
                 studentCountWeightArray.forEach((el, index) => {
-                    if (instanceInfo[0].studentCount < el[2] && studentCountMet === false) {
+                    if (parseInt(instanceInfo[0].studentCount) < el[2] && studentCountMet === false) {
                         studentCountWeightAmount = el[1];
                         studentCountMet = true;
                     }
 
-                    if (instanceInfo[0].studentCount >= studentCountWeightArray[studentCountWeightArray.length - 1][2]
+                    if (parseInt(instanceInfo[0].studentCount) >= studentCountWeightArray[studentCountWeightArray.length - 1][2]
                         && studentCountMet === false) {
                         studentCountWeightAmount = studentCountWeightArray[studentCountWeightArray.length - 1][1];
                         studentCountMet = true;
@@ -309,7 +309,12 @@ class ScheduleRowSubject extends Component {
                             div.innerText = instanceInfo[0].classID
                         }
                         if (i === 2) {
-                            div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            if (selectedUserData.firstName.length < 8 && selectedUserData.lastName < 8) {
+                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                
+                            } else {
+                                div.innerText = `${selectedUserData.firstName.substring(0,8)} ${selectedUserData.lastName.substring(0,8)}`
+                            }
                         }
                         //div.style.height = "25px"
                         div.classList.add('has-class');
@@ -338,7 +343,12 @@ class ScheduleRowSubject extends Component {
                             div.innerText = instanceInfo[0].classID
                         }
                         if (i === 2) {
-                            div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            if (selectedUserData.firstName.length < 8 && selectedUserData.lastName < 8) {
+                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                
+                            } else {
+                                div.innerText = `${selectedUserData.firstName.substring(0,8)} ${selectedUserData.lastName.substring(0,8)}`
+                            }
                         }
                     })
                             
@@ -365,7 +375,12 @@ class ScheduleRowSubject extends Component {
                             div.innerText = instanceInfo[0].classID
                         }
                         if (i === 2) {
-                            div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            if (selectedUserData.firstName.length < 8 && selectedUserData.lastName < 8) {
+                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                
+                            } else {
+                                div.innerText = `${selectedUserData.firstName.substring(0,8)} ${selectedUserData.lastName.substring(0,8)}`
+                            }
                         }
                     })
                             
@@ -394,7 +409,12 @@ class ScheduleRowSubject extends Component {
                                 div.innerText = instanceInfo[0].classID
                             }
                             if (i === 1) {
-                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                if (selectedUserData.firstName.length < 8 && selectedUserData.lastName < 8) {
+                                    div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                    
+                                } else {
+                                    div.innerText = `${selectedUserData.firstName.substring(0,8)} ${selectedUserData.lastName.substring(0,8)}`
+                                }
                             }
                                     
                         })
@@ -422,7 +442,12 @@ class ScheduleRowSubject extends Component {
                                 div.innerText = instanceInfo[0].classID
                             }
                             if (i === 1) {
-                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                if (selectedUserData.firstName.length < 8 && selectedUserData.lastName < 8) {
+                                    div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                    
+                                } else {
+                                    div.innerText = `${selectedUserData.firstName.substring(0,8)} ${selectedUserData.lastName.substring(0,8)}`
+                                }
                             }
                                     
                         })
@@ -445,8 +470,13 @@ class ScheduleRowSubject extends Component {
                             if (i === 0) {
                                 div.innerText = instanceInfo[0].classID
                             }
-                            if (i === 2) {
-                                div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                            if (i === 1) {
+                                if (selectedUserData.firstName.length < 8 && selectedUserData.lastName < 8) {
+                                    div.innerText = `${selectedUserData.firstName} ${selectedUserData.lastName}`
+                                    
+                                } else {
+                                    div.innerText = `${selectedUserData.firstName.substring(0,8)} ${selectedUserData.lastName.substring(0,8)}`
+                                }
                             }
                                         
                                     
@@ -1048,99 +1078,99 @@ class ScheduleRowSubject extends Component {
                 
                 <div id="jan" className="schedule-grid-row" data-name="row-jan">
                     <div id='jan-1' className='schedule-grid-subject-inner row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='jan-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='jan-3' className='schedule-grid-subject-inner three-row row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>
                 <div id="feb" className="schedule-grid-row" data-name="row-feb">
                     <div id='feb-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='feb-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='feb-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="mar" className="schedule-grid-row" data-name="row-mar">
                     <div id='mar-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='mar-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='mar-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="apr" className="schedule-grid-row" data-name="row-apr">
                     <div id='apr-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='apr-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='apr-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="may" className="schedule-grid-row" data-name="row-may">
                     <div id='may-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='may-2' className='schedule-grid-subject-inner three-row row-two' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='may-3' className='schedule-grid-subject-inner three-row  row-three' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="jun" className="schedule-grid-row" data-name="row-june">
                     <div id='jun-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='jun-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='jun-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="jul" className="schedule-grid-row " data-name="row-july">
                     <div id='jul-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
                         onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
                     <div id='jul-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='jul-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="aug" className="schedule-grid-row " data-name="row-aug">
                     <div id='aug-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='aug-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='aug-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>
                 <div id="sep" className="schedule-grid-row " data-name="row-sep">
                     <div id='sep-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='sep-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='sep-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="oct" className="schedule-grid-row" data-name="row-oct">
                     <div id='oct-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='oct-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='oct-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="nov" className="schedule-grid-row" data-name="row-nov">
                     <div id='nov-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='nov-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='nov-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>                             
                 <div id="dec" className="schedule-grid-row" data-name="row-dec">
                     <div id='dec-1' className='schedule-grid-subject-inner  row-one' data-hasclass='false'
-                        onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='dec-2' className='schedule-grid-subject-inner three-row row-two' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                     <div id='dec-3' className='schedule-grid-subject-inner three-row  row-three' 
-                        data-hasclass='false' onClick={this.onClicked} onMouseEnter={this.onHover} onMouseLeave={this.onOut}></div>
+                        ></div>
                 </div>
             </div>
                 {/* <CustomButton onClick={this.changeDisplayRows} /> */ }

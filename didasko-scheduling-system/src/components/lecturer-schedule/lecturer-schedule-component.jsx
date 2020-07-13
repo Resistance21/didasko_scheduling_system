@@ -47,10 +47,10 @@ class LecturerSchedule extends Component {
             refreshPicker: false,
 
         }
-        this.addNewClass = this.addNewClass.bind(this);
-        this.foreRefresh = this.foreRefresh.bind(this);
+        //this.addNewClass = this.addNewClass.bind(this);
+        //this.foreRefresh = this.foreRefresh.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
-        this.changeDisplayRows = this.changeDisplayRows.bind(this);
+        //this.changeDisplayRows = this.changeDisplayRows.bind(this);
         
     }
 
@@ -148,11 +148,11 @@ class LecturerSchedule extends Component {
                     currentSubjectArray.push(schedules.y2020[keyCheck])
                 }
             } */
-            subjectRows.push(<ScheduleRowSubject key={item} selectedUserID={uid} sendWeights={this.calculateWeights}
+            subjectRows.push(<ScheduleRowSubject key={item} className='schedule-row-subject' selectedUserID={uid} sendWeights={this.calculateWeights}
                 year='2020' subjectCode={item} selectedUserData={selectedUserData} />) 
         })
         console.log('SUBJECT ROWS', subjectRows)
-        if (subjectRows.length === 0) {
+        /* if (subjectRows.length === 0) {
             const dropDown = document.querySelector('#modify-schedule-dropdown');
             const dropDownValue = dropDown.value;
 
@@ -178,18 +178,18 @@ class LecturerSchedule extends Component {
                 })
             })
             
-        }
+        } */
 
         this.setState({
             scheduleRows: subjectRows,
             //reRenderPicker: false
         })
-        this.refreshPicker()
+        //this.refreshPicker()
         console.log('SUBJECT ROWS state', this.state.scheduleRows)
         //return subjectRows;
     }
 
-    addNewClass = async (event) => {
+    /* addNewClass = async (event) => {
         const { selectedUserID } = this.state
         const dropDown = document.querySelector('#subjects-picker-dropdown');
         const dropDownClass = document.querySelector('#subjects-class-picker-dropdown');
@@ -319,11 +319,11 @@ class LecturerSchedule extends Component {
         }).then(() => {
             console.log('ine add class')
             //this.createSubjectRow();
-        }) */
+        }) 
         
     }
 
-    foreRefresh = () => {
+    /* foreRefresh = () => {
         console.log("COMPONENT MOUNT")
         const user = auth.currentUser;
         if (user) {
@@ -349,12 +349,12 @@ class LecturerSchedule extends Component {
         // No user is signed in.
         }
         
-    }
+    } */
 
-    changeDisplayRows = () => {
+    /* changeDisplayRows = () => {
         this.setState({ changeDisplayRows: true })
         console.log('button press', this.state.changeDisplayRows)
-    }
+    } */ 
 
     calculateWeights = ( weightHolder) => {
         const { monthWeights } = this.state;
@@ -395,9 +395,20 @@ class LecturerSchedule extends Component {
             })
         })
         console.log('weight holder schedule function', this.state.monthWeights)
+        const colourCheck = Object.entries(this.state.monthWeights);
+        colourCheck.forEach(el => {
+            const monthDiv = document.querySelector(`#weight-${el[0]}`);
+            if (el[1] < 3) {
+                monthDiv.style.backgroundColor = 'lightgreen';
+            } else if (el[1] < 6) {
+                monthDiv.style.backgroundColor = 'orange';
+            } else {
+                monthDiv.style.backgroundColor = 'red';
+            }
+        })
     }
 
-    printState = () => {
+    /* printState = () => {
         console.log('Current STATE', this.state)
     }
 
@@ -445,7 +456,7 @@ class LecturerSchedule extends Component {
     refreshPicker = () => {
         this.setState({refreshPicker: !this.state.refreshPicker})
 
-    }
+    } */
     
 
 
@@ -491,18 +502,18 @@ class LecturerSchedule extends Component {
                     </div>
                     <div className="schedule-header">
                         {/* <div className="schedule-header-item"></div> */}
-                        <div className="schedule-header-item"><span>{monthWeights.jan.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.feb.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.mar.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.apr.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.may.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.jun.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.jul.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.aug.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.sep.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.oct.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.nov.toFixed(2)}</span> </div>
-                        <div className="schedule-header-item"><span>{monthWeights.dec.toFixed(2)}</span> </div>
+                        <div id='weight-jan' className="schedule-header-item"><span>{monthWeights.jan.toFixed(2)}</span> </div>
+                        <div id='weight-feb' className="schedule-header-item"><span>{monthWeights.feb.toFixed(2)}</span> </div>
+                        <div id='weight-mar' className="schedule-header-item"><span>{monthWeights.mar.toFixed(2)}</span> </div>
+                        <div id='weight-apr' className="schedule-header-item"><span>{monthWeights.apr.toFixed(2)}</span> </div>
+                        <div id='weight-may' className="schedule-header-item"><span>{monthWeights.may.toFixed(2)}</span> </div>
+                        <div id='weight-jun' className="schedule-header-item"><span>{monthWeights.jun.toFixed(2)}</span> </div>
+                        <div id='weight-jul' className="schedule-header-item"><span>{monthWeights.jul.toFixed(2)}</span> </div>
+                        <div id='weight-aug' className="schedule-header-item"><span>{monthWeights.aug.toFixed(2)}</span> </div>
+                        <div id='weight-sep' className="schedule-header-item"><span>{monthWeights.sep.toFixed(2)}</span> </div>
+                        <div id='weight-oct' className="schedule-header-item"><span>{monthWeights.oct.toFixed(2)}</span> </div>
+                        <div id='weight-nov' className="schedule-header-item"><span>{monthWeights.nov.toFixed(2)}</span> </div>
+                        <div id='weight-dec' className="schedule-header-item"><span>{monthWeights.dec.toFixed(2)}</span> </div>
                     </div>
                 
                 <div className="schedule-container">

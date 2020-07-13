@@ -55,6 +55,7 @@ class WeightControl extends Component {
                 
             }
         })
+        weightModifyDropDown.selectedIndex = -1; 
 
         const weightDeleteDropDown = document.querySelector('#weight-delete-picker-dropdown');
         weightList.forEach((el) => {
@@ -67,6 +68,7 @@ class WeightControl extends Component {
                 weightDeleteDropDown.add(option);               
             } 
         })
+        weightDeleteDropDown.selectedIndex = -1;
 
         weightStudentAmountList.sort((a, b) => {
             return a[1][0].count - b[1][0].count;
@@ -80,6 +82,7 @@ class WeightControl extends Component {
                 option.dataset.weightAmount = el[1][0].weight 
                 weightStudentCountDropDown.add(option); 
         })
+        weightStudentCountDropDown.selectedIndex = -1;
 
         const weightStudentAmountDeleteDropDown = document.querySelector('#weight-delete-student-amount-picker-dropdown');
         weightStudentAmountList.forEach(el => {
@@ -88,6 +91,7 @@ class WeightControl extends Component {
                 option.dataset.weightAmount = el[1][0].weight 
                 weightStudentAmountDeleteDropDown.add(option); 
         })
+        weightStudentAmountDeleteDropDown.selectedIndex = -1;
     }
 
     onDropDownChange = async(event) => {
@@ -122,6 +126,8 @@ class WeightControl extends Component {
 
         await firestore.collection('weights').doc(weightName.value).set({
             weight: parseFloat(weightAmount.value)
+        }).then(alert('Creating New Weight Complete')).catch(error => {
+            alert(error)
         })
         
     }
@@ -136,6 +142,8 @@ class WeightControl extends Component {
 
         await firestore.collection('weights').doc(weightModifyName.value).set({
             weight: parseFloat(weightAmountInput.value)
+        }).then(alert('Modifying Weight Complete')).catch(error => {
+            alert(error)
         })
 
     }
@@ -144,7 +152,9 @@ class WeightControl extends Component {
         event.preventDefault();
         const deleteWeightDropDown = document.querySelector('#weight-delete-picker-dropdown');
 
-        await firestore.collection('weights').doc(deleteWeightDropDown.value).delete()
+        await firestore.collection('weights').doc(deleteWeightDropDown.value).delete().then(alert('Deleting Weight Complete')).catch(error => {
+            alert(error)
+        })
     }
 
     createNewStudentAmountWeight = async (event) => {
@@ -155,6 +165,8 @@ class WeightControl extends Component {
         await firestore.collection('weights/number of students weights/number break points').doc(weightName.value).set({
             count: parseInt(weightName.value),
             weight: parseFloat(weightAmount.value)
+        }).then(alert('Creating New Student Treshold Weight Complete')).catch(error => {
+            alert(error)
         })
     }
 
@@ -168,6 +180,8 @@ class WeightControl extends Component {
         await firestore.collection('weights/number of students weights/number break points').doc(newWeightName.value).set({
             count: parseInt(newWeightName.value),
             weight: parseFloat(weightAmount.value)
+        }).then(alert('Modifying Student Treshold Weight Complete')).catch(error => {
+            alert(error)
         })
     }
 
@@ -176,6 +190,9 @@ class WeightControl extends Component {
         const deleteStudentAmountWeight = document.querySelector('#weight-delete-student-amount-picker-dropdown');
 
         await firestore.collection('weights/number of students weights/number break points').doc(deleteStudentAmountWeight.value).delete()
+            .then(alert('Deleting Student Treshold Weight Complete')).catch(error => {
+            alert(error)
+        })
     }
     
 

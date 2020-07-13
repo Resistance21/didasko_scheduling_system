@@ -553,8 +553,8 @@ class InstanceModifyModal extends Component {
         let supportTecherArray = []
         const currentLec = lecturer.text;
 
-        if (removeLec === 'Remove Lecturer') {
-            const oldLecID = await firestore.collection(`user`).where('email', '==', instanceInfo.teacher).get().then(snapshot => {
+        if (removeLec !== 'Remove Lecturer') {
+            const oldLecID = await firestore.collection(`user`).where('email', '==', instanceInfo.teacherEmail).get().then(snapshot => {
                 let tempID
                 snapshot.forEach(snap => {
                     tempID = snap.id
@@ -573,9 +573,45 @@ class InstanceModifyModal extends Component {
                     firestore.collection(`user/${oldLecID}/schedules/y2020/subjects/`).doc(subjectCode).delete()
                 }
             })
+            const currentLecID = await firestore.collection(`user`).where('email', '==', lecturer.value).get().then(snapShot => {
+                let tempID
+                snapShot.forEach(snap => {
+                    tempID = snap.id;
+                    //newLecFirstName = snap.data().firstName;
+                    //newLecSecondName = snap.data().secondName;
+                })
+                return tempID
+            })
+
+            await firestore.collection(`user/${currentLecID}/schedules/y2020/subjects/`).doc(subjectCode).set({})
+            await firestore.collection(`user/${currentLecID}/schedules/${year}/subjects/${subjectCode}/instances`).doc(instanceCode)
+                .set({}).catch(err => {
+                    console.log('deleteing error', err)
+                })
             
-        }else if (oldLecEmail !== lecturer.value) {
-            const oldLecID = await firestore.collection(`user`).where('email', '==', instanceInfo.teacher).get().then(snapshot => {
+        }else if (removeLec === 'Remove Lecturer') {
+            const oldLecID = await firestore.collection(`user`).where('email', '==', instanceInfo.teacherEmail).get().then(snapshot => {
+                let tempID
+                snapshot.forEach(snap => {
+                    tempID = snap.id
+                })
+                return tempID
+            })
+    
+            await firestore.collection(`user/${oldLecID}/schedules/${year}/subjects/${subjectCode}/instances`).doc(instanceCode)
+                .delete().catch(err => {
+                    console.log('deleteing error', err)
+                })
+            
+            await firestore.collection(`user/${oldLecID}/schedules/y2020/subjects/`).doc(subjectCode).collection('instances')
+            .get().then(async (snapShot) => {
+                if (snapShot.size === 0) {
+                    firestore.collection(`user/${oldLecID}/schedules/y2020/subjects/`).doc(subjectCode).delete()
+                }
+            })
+        }
+        /* else if (oldLecEmail !== lecturer.value) {
+            const oldLecID = await firestore.collection(`user`).where('email', '==', instanceInfo.teacherEmail).get().then(snapshot => {
                 let tempID
                 snapshot.forEach(snap => {
                     tempID = snap.id
@@ -611,7 +647,7 @@ class InstanceModifyModal extends Component {
                     console.log('deleteing error', err)
                 })
             
-        }
+        } */
 
         if (firstSupportDropDown.value !== "Remove Lecturer" && firstSupportDropDown.value !== '') {
             supportTecherArray.push(firstSupportDropDown.value);
@@ -648,6 +684,8 @@ class InstanceModifyModal extends Component {
                     supportLecturer: supportTecherArray,
                     supportLecturerName: supportLecturerNames,
                     supportLecturerAssigned: true
+                }).then(alert('Updating Instance Complete')).catch(error => {
+                    alert(error)
                 })
                 
             } else {
@@ -660,6 +698,8 @@ class InstanceModifyModal extends Component {
                     supportLecturer: supportTecherArray,
                     supportLecturerName: supportLecturerNames,
                     supportLecturerAssigned: false
+                }).then(alert('Updating Instance Complete')).catch(error => {
+                    alert(error)
                 })
                 
             }          
@@ -674,6 +714,8 @@ class InstanceModifyModal extends Component {
                     supportLecturer: supportTecherArray,
                     supportLecturerName: supportLecturerNames,
                     supportLecturerAssigned: true
+                }).then(alert('Updating Instance Complete')).catch(error => {
+                    alert(error)
                 })
                 
             } else {
@@ -686,6 +728,8 @@ class InstanceModifyModal extends Component {
                     supportLecturer: supportTecherArray,
                     supportLecturerName: supportLecturerNames,
                     supportLecturerAssigned: false
+                }).then(alert('Updating Instance Complete')).catch(error => {
+                    alert(error)
                 })
                 
             }
@@ -708,7 +752,7 @@ class InstanceModifyModal extends Component {
         const { displayName, email, password, confirmPassword, show } = this.state;
         const showHideClassName = show ? "modal display-block" : "modal display-none";
         return (
-            <div className={`sign-up ${showHideClassName}`}>
+            <div className={`instance-modify-modal ${showHideClassName}`}>
                 <div className='modal-main'>
                     <h2 className='title'>Modify Instance</h2>
                     <form className='form-column'>                    

@@ -1,26 +1,40 @@
-
-.image{
-    margin-top: 35px;
-    margin-bottom: 50px;
-
-}
-.content{
-    background-color: white; 
-
-}
-
-
-#sign-in-page-container{
+.sign-in-page-container{
+    grid-column: 1/3;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    height: 100%;
     align-items: center;
-    background-color: grey;
 
-    .grid-square{
-        /* margin-left: 33%;
-        margin-right: auto; */
+    .image{
+        margin-top: 35px;
+        margin-bottom: 50px;
+    
+    }
+    .content{
+        background-color: white; 
+    
+    }
+
+    .custom-button{
+        margin: auto;
+        background-color: #004a80;
+        color: #ffffff;
+        width: 40%
+    }
+    
+    
+    #sign-in-page-container{
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        background-color: grey;
+    
+        .grid-square{
+            /* margin-left: 33%;
+            margin-right: auto; */
+        }
+    
     }
 
 }

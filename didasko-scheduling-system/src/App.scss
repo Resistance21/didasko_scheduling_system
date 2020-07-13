@@ -41,6 +41,25 @@ a {
   width: 100%;
 }
 
+.header{
+  .custom-button{
+    float: right;
+    //border: solid white 3px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    width:auto;
+    margin-right: 5px;
+    height: auto;
+    :hover{
+     background-color: #e9ecef;
+    }
+  }
+}
+
+.footer{
+  background-color: #004a80;
+}
+
 #main-grid{
   display: grid;
   height: 100vh;
